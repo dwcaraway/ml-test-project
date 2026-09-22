@@ -4,5 +4,26 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.exclude": {
+			"**/bin": true,
+			"**/obj": true,
+			"**/.vs": true,
+			"**/.vscode": true,
+			"**/TestResults": true,
+			"**/*.user": true,
+			"**/*.suo": true,
+			"**/*.cache": true,
+			"**/*.log": true
+		},
+		"search.exclude": {
+			"**/bin": true,
+			"**/obj": true,
+			"**/.vs": true,
+			"**/.vscode": true,
+			"**/TestResults": true,
+			"**/node_modules": true
+		},
+		"explorer.excludeGitIgnore": true
+	}
 }
