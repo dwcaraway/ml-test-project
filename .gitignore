@@ -65,3 +65,6 @@ _ReSharper*/
 # Others
 *.orig
 *.bak
+
+# Spec-kit Agents
+.agents/
