@@ -50,6 +50,8 @@ TestResults/
 # ASP.NET / web
 wwwroot/**/*.map
 node_modules/
+frontend/dist/
+*.tsbuildinfo
 
 # Temporary files
 *.tmp
