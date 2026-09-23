@@ -48,7 +48,9 @@ TestResults/
 *.iml
 
 # ASP.NET / web
-wwwroot/**/*.map
+backend/wwwroot/**/*.map
+backend/wwwroot/**
+!backend/wwwroot/.gitkeep
 node_modules/
 frontend/dist/
 *.tsbuildinfo
