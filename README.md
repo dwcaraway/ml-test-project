@@ -1,6 +1,6 @@
 # ML Test Project
 
-[![.NET Tests](https://github.com/dwcaraway/ml-test-project/actions/workflows/dotnet.yml/badge.svg)](https://github.com/dwcaraway/ml-test-project/actions/workflows/dotnet.yml)
+[![Project Tests](https://github.com/dwcaraway/ml-test-project/actions/workflows/tests.yml/badge.svg)](https://github.com/dwcaraway/ml-test-project/actions/workflows/tests.yml)
 
 A full-stack web application starter featuring a C# ASP.NET Core backend and a TypeScript single-page application (SPA) frontend built with Vite.
 
