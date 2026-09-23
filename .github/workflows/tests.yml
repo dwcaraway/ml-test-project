@@ -29,6 +29,10 @@ jobs:
         working-directory: ./backend
         run: dotnet build --configuration Release --no-restore
 
+      - name: Ensure backend wwwroot exists
+        shell: bash
+        run: mkdir -p backend/wwwroot
+
       - name: Run backend tests
         working-directory: ./backend
         run: dotnet test --configuration Release --no-build --verbosity normal
