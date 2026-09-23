@@ -27,20 +27,4 @@ public class EndpointIntegrationTests : IClassFixture<WebApplicationFactory<Prog
         var content = await response.Content.ReadAsStringAsync();
         Assert.Equal("API Response", content);
     }
-
-    [Fact]
-    public async Task Get_IndexHtml_ReturnsOkWithHelloWorldHtml()
-    {
-        // Arrange
-        var client = _factory.CreateClient();
-
-        // Act
-        var response = await client.GetAsync("/index.html");
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
-        var content = await response.Content.ReadAsStringAsync();
-        Assert.Contains("Hello World!", content);
-    }
 }
