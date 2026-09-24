@@ -41,7 +41,12 @@ namespace TestProject
             app.MapFallbackToFile("index.html");
 
             var fileBrowserOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<TestProject.Configuration.FileBrowserOptions>>().Value;
-            TestProject.Services.FileBrowserStartupValidator.Validate(fileBrowserOptions.GetCanonicalRootPath());
+            var rootPath = fileBrowserOptions.GetCanonicalRootPath();
+            var envConfigured = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(TestProject.Configuration.FileBrowserOptions.EnvVarName)) ||
+                !string.IsNullOrWhiteSpace(builder.Configuration[TestProject.Configuration.FileBrowserOptions.EnvVarName]);
+
+            TestProject.Services.FileBrowserStartupValidator.Validate(rootPath);
+            TestProject.Services.FileBrowserStartupValidator.EnsureLocalSampleFiles(rootPath, app.Environment.IsDevelopment(), envConfigured);
 
             app.Run();
         }

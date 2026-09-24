@@ -52,5 +52,32 @@ namespace TestProject.Services
                 }
             }
         }
+
+        public static void EnsureLocalSampleFiles(string rootPath, bool isDevelopment, bool envVarConfigured)
+        {
+            if (!isDevelopment || envVarConfigured) { return; }
+
+            if (string.IsNullOrWhiteSpace(rootPath))
+            {
+                return;
+            }
+
+            Directory.CreateDirectory(rootPath);
+
+            var sampleFile = Path.Combine(rootPath, "file1.txt");
+            if (!File.Exists(sampleFile))
+            {
+                File.WriteAllText(sampleFile, "Hello, this is a local sample file for the file browser API.");
+            }
+
+            var nestedDir = Path.Combine(rootPath, "samples");
+            Directory.CreateDirectory(nestedDir);
+
+            var nestedFile = Path.Combine(nestedDir, "notes.txt");
+            if (!File.Exists(nestedFile))
+            {
+                File.WriteAllText(nestedFile, "This file was generated for local development.");
+            }
+        }
     }
 }

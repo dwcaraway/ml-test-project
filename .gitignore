@@ -51,6 +51,7 @@ TestResults/
 backend/wwwroot/**/*.map
 backend/wwwroot/**
 !backend/wwwroot/.gitkeep
+storage/
 node_modules/
 frontend/dist/
 *.tsbuildinfo
