@@ -4,12 +4,14 @@ using Xunit;
 
 namespace TestProject.Tests.Integration;
 
-public class EndpointIntegrationTests : IClassFixture<TestAppFactory>
+[Collection("WebRootCollection")]
+public class EndpointIntegrationTests
 {
     private readonly HttpClient _client;
 
     public EndpointIntegrationTests(TestAppFactory factory)
     {
+        WebRootTestBootstrapper.EnsureIndexHtmlExists();
         _client = factory.CreateClient();
     }
 
