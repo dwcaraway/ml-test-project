@@ -23,8 +23,11 @@ ml-test-project/
 │   └── TestProject.sln             # Solution file
 ├── frontend/                       # TypeScript SPA built with Vite
 │   ├── src/                        # TypeScript source files
+│   │   ├── core/                   # Core SPA router, view, and component base classes
+│   │   ├── components/             # Reusable UI components (Navbar, HeroCard)
+│   │   ├── views/                  # Composite views (HomeView, DetailView, NotFoundView)
 │   │   ├── api.ts                  # API client logic
-│   │   └── main.ts                 # DOM wiring & application initialization
+│   │   └── main.ts                 # App initialization & route registration
 │   ├── tests/                      # Frontend unit tests (Vitest)
 │   ├── index.html                  # HTML entry point
 │   ├── package.json                # Frontend dependencies & npm scripts

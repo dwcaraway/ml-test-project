@@ -14,11 +14,16 @@ namespace TestProject
 
             // Configure the HTTP request pipeline.
 
-            app.UseHttpsRedirection();
+            if (!app.Environment.IsEnvironment("Testing"))
+            {
+                app.UseHttpsRedirection();
+            }
 
             app.UseStaticFiles();
 
             app.MapControllers();
+
+            app.MapFallbackToFile("index.html");
 
             app.Run();
         }

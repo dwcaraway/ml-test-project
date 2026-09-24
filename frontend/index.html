@@ -3,17 +3,79 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Full-Stack Application</title>
+    <title>SPA Explorer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #24292f;
+            background-color: #f6f8fa;
+            line-height: 1.5;
+        }
+        #app {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 24px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .navbar {
+            display: flex;
+            gap: 16px;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #d0d7de;
+        }
+        .navbar a {
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+        .navbar a.active {
+            background-color: #f3f4f6;
+            color: #1f2328;
+        }
+        .card, .detail-card {
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 16px;
+            background-color: #fafbfc;
+        }
+        .item-list {
+            list-style: none;
+            padding: 0;
+        }
+        .item-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eaeef2;
+        }
+        .btn-back, .btn-home {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 16px;
+            background-color: #2da44e;
+            color: #ffffff;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .btn-back:hover, .btn-home:hover {
+            background-color: #2c974b;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <h1>Hello World!</h1>
-        <div id="api-section">
-            <button id="fetch-btn">Fetch API Data</button>
-            <p id="api-status">Click to fetch status...</p>
-        </div>
-    </div>
+    <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
-
