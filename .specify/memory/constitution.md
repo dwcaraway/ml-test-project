@@ -1,16 +1,14 @@
 <!--
 ### Sync Impact Report
-- Version change: 1.0.0 -> 1.1.0
-- Modified principles:
-  - VI. Mandatory Automated Testing & Tooling Compliance -> VI. Mandatory Automated Testing, Linting & Tooling Compliance
+- Version change: 1.1.0 -> 1.2.0
+- Modified principles: None
 - Added principles:
-  - VII. Clarification Over Assumption (Ask When Unsure)
-- Added sections:
-  - None
-- Removed sections:
-  - None
-- Follow-up TODOs:
-  - None
+  - VIII. Documentation Currency (Keep README.md Up to Date)
+- Added sections: None
+- Modified sections:
+  - Development Workflow & Quality Gates (added documentation synchronization gate)
+- Removed sections: None
+- Follow-up TODOs: None
 -->
 
 # ML Test Project Constitution
@@ -53,6 +51,10 @@ Automated testing, linting compliance, and standard SDK tooling are non-negotiab
 Whenever requirements, system contracts, architecture, or expected behaviors are ambiguous, underspecified, or uncertain, the AI agent (and developers) MUST explicitly ask the user for clarification before making assumptions or proceeding with implementation. Guessing or silently proceeding with arbitrary defaults is strictly forbidden.
 *Rationale*: Prevents architectural drift, misaligned API contracts, rework, and unneeded complexity caused by proceeding on unverified assumptions.
 
+### VIII. Documentation Currency (Keep README.md Up to Date)
+Project documentation—specifically [README.md](file:///C:/Users/dwcar/repos/ml-test-project/README.md)—MUST be maintained as a live, accurate reflection of the current codebase. Whenever application architecture, project directory layout, API contracts, prerequisites, development commands, or routing behavior change, [README.md](file:///C:/Users/dwcar/repos/ml-test-project/README.md) MUST be updated synchronously within the same change set. Documentation MUST never lag behind implementation.
+*Rationale*: Stale documentation confuses contributors, breaks onboarding, and causes agent misalignment. Maintaining live documentation guarantees immediate transparency and operational readiness.
+
 ## Technology Stack & Build Requirements
 
 The project adheres to the following foundational technology specifications:
@@ -71,6 +73,7 @@ All development activities MUST pass through structured quality gates before int
    - Frontend validation: `npm run typecheck`, linter verification, `npm test`, and `npm run build` MUST pass cleanly.
 3. **Scope Discipline**: Changes MUST be strictly scoped to their respective application areas (`backend/` or `frontend/`). Unrelated cleanups or refactorings MUST NOT be bundled with functional changes.
 4. **Ambiguity Resolution**: If any requirement or constraint is unclear at any stage of the workflow, execution MUST pause to seek clarification.
+5. **Documentation Synchronization**: Any structural, operational, or feature modification MUST review and update [README.md](file:///C:/Users/dwcar/repos/ml-test-project/README.md) to keep project guidance, command references, and architecture maps current.
 
 ## Governance
 
@@ -84,4 +87,4 @@ This constitution represents the foundational policy of the project and supersed
   - PATCH: Clarifications, typographical fixes, and non-semantic refinements.
 - **Runtime Guidance**: Operational development guidelines, scripts, and local developer commands are documented in [AGENTS.md](file:///C:/Users/dwcar/repos/ml-test-project/AGENTS.md).
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-24 | **Last Amended**: 2026-09-24
+**Version**: 1.2.0 | **Ratified**: 2026-09-24 | **Last Amended**: 2026-09-24
