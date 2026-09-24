@@ -29,9 +29,13 @@ jobs:
         working-directory: ./backend
         run: dotnet build --configuration Release --no-restore
 
-      - name: Ensure backend wwwroot exists
+      - name: Verify backend wwwroot/.gitkeep exists
         shell: bash
-        run: mkdir -p backend/wwwroot
+        run: |
+          if [ ! -f backend/wwwroot/.gitkeep ]; then
+            echo "::error::backend/wwwroot/.gitkeep is missing! You may have run 'npm run build' which cleans wwwroot and removes .gitkeep. Please restore it before committing: git checkout backend/wwwroot/.gitkeep"
+            exit 1
+          fi
 
       - name: Run backend tests
         working-directory: ./backend

@@ -15,9 +15,9 @@ ml-test-project/
 │   ├── Properties/                 # Launch profiles (launchSettings.json)
 │   ├── TestProject.Tests/          # xUnit unit & integration tests
 │   │   ├── Controllers/            # Unit tests for controller behavior
-│   │   └── Integration/            # Integration tests for API endpoints
-│   ├── wwwroot/                    # Built frontend distribution target / static files
-│   ├── Program.cs                  # ASP.NET Core host and pipeline configuration
+│   │   └── Integration/            # Integration tests (API endpoints, SPA fallback)
+│   ├── wwwroot/                    # Built frontend distribution target / static files (tracked via .gitkeep)
+│   ├── Program.cs                  # ASP.NET Core host, pipeline, and SPA fallback routing
 │   ├── appsettings*.json           # Runtime configuration files
 │   ├── TestProject.csproj          # Main .NET project file
 │   └── TestProject.sln             # Solution file
@@ -28,12 +28,15 @@ ml-test-project/
 │   │   ├── views/                  # Composite views (HomeView, DetailView, NotFoundView)
 │   │   ├── api.ts                  # API client logic
 │   │   └── main.ts                 # App initialization & route registration
-│   ├── tests/                      # Frontend unit tests (Vitest)
+│   ├── tests/                      # Frontend unit & component tests (Vitest)
 │   ├── index.html                  # HTML entry point
 │   ├── package.json                # Frontend dependencies & npm scripts
 │   ├── tsconfig.json               # TypeScript configuration
 │   └── vite.config.ts              # Vite server & proxy configuration
+├── specs/                          # Spec Kit feature specifications, plans, and tasks
+│   └── 001-spa-views-routing/      # SPA Views & Deep-Linking Routing specification
 ├── .github/workflows/              # CI/CD automation workflows
+├── .specify/                       # Spec Kit project metadata & constitution
 ├── AGENTS.md                       # Repo guidance and conventions
 └── README.md
 ```
@@ -147,6 +150,14 @@ The frontend application is a modern single-page application built with TypeScri
 
   This runs TypeScript verification (`tsc`) and compiles static assets via Vite directly into `backend/wwwroot` so the ASP.NET Core server can host the SPA.
 
+  > [!WARNING]
+  > Running `npm run build` will overwrite and delete the `backend/wwwroot/.gitkeep` file (due to Vite's `emptyOutDir: true`). Because `.gitignore` ignores all build outputs in `backend/wwwroot/` while explicitly whitelisting `!backend/wwwroot/.gitkeep`, losing `.gitkeep` causes the `wwwroot` folder to no longer be tracked or stored by git.
+  >
+  > If you run `npm run build` locally, always restore `.gitkeep` before committing:
+  > ```bash
+  > git checkout backend/wwwroot/.gitkeep
+  > ```
+
 * **Preview the production build:**
 
   ```bash
@@ -173,4 +184,18 @@ The frontend application is a modern single-page application built with TypeScri
 
 ## Continuous Integration
 
-A GitHub Actions workflow is configured at [`.github/workflows/dotnet.yml`](.github/workflows/dotnet.yml). It automatically restores dependencies, builds the solution in `Release` mode, and runs the test suite on every push and pull request.
+A GitHub Actions workflow is configured at [`.github/workflows/tests.yml`](.github/workflows/tests.yml) and runs automatically on every push and pull request targeting the `main` branch (as well as via manual `workflow_dispatch` triggers).
+
+The CI pipeline executes two parallel jobs:
+
+* **Backend .NET Tests (`backend-tests`)**:
+  * Sets up the .NET 8.0 SDK.
+  * Restores dependencies and builds `backend/TestProject.sln` in `Release` mode.
+  * Verifies `backend/wwwroot/.gitkeep` exists, failing with an actionable error message if missing (e.g., if overwritten by `npm run build`).
+  * Runs all unit and integration tests via `dotnet test`.
+
+* **Frontend npm Tests (`frontend-tests`)**:
+  * Sets up Node.js 20 with npm dependency caching.
+  * Installs dependencies cleanly via `npm ci`.
+  * Runs all unit and component tests with Vitest (`npm test`).
+  * Enforces static typing via TypeScript type checking (`npm run typecheck`).
