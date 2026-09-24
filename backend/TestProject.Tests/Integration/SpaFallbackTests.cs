@@ -1,26 +1,33 @@
 using System.Net;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace TestProject.Tests.Integration;
 
-public class SpaFallbackTests : IClassFixture<WebApplicationFactory<Program>>
+public class TestAppFactory : WebApplicationFactory<Program>
 {
-    private readonly WebApplicationFactory<Program> _factory;
-
-    public SpaFallbackTests(WebApplicationFactory<Program> factory)
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        _factory = factory;
+        builder.UseEnvironment("Testing");
+        builder.UseSetting("https_port", "443");
+    }
+}
+
+public class SpaFallbackTests : IClassFixture<TestAppFactory>
+{
+    private readonly HttpClient _client;
+
+    public SpaFallbackTests(TestAppFactory factory)
+    {
+        _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task Get_ClientPath_ReturnsOkWithIndexHtml()
     {
-        // Arrange
-        var client = _factory.CreateClient();
-
         // Act
-        var response = await client.GetAsync("/detail/123");
+        var response = await _client.GetAsync("/detail/123");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -32,11 +39,8 @@ public class SpaFallbackTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task Get_RootPath_ReturnsOkWithIndexHtml()
     {
-        // Arrange
-        var client = _factory.CreateClient();
-
         // Act
-        var response = await client.GetAsync("/");
+        var response = await _client.GetAsync("/");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -46,11 +50,8 @@ public class SpaFallbackTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task Get_ApiEndpoint_PreservesApiResponse()
     {
-        // Arrange
-        var client = _factory.CreateClient();
-
         // Act
-        var response = await client.GetAsync("/test");
+        var response = await _client.GetAsync("/test");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

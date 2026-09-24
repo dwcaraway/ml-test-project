@@ -4,23 +4,20 @@ using Xunit;
 
 namespace TestProject.Tests.Integration;
 
-public class EndpointIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+public class EndpointIntegrationTests : IClassFixture<TestAppFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly HttpClient _client;
 
-    public EndpointIntegrationTests(WebApplicationFactory<Program> factory)
+    public EndpointIntegrationTests(TestAppFactory factory)
     {
-        _factory = factory;
+        _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task Get_TestEndpoint_ReturnsOkWithApiResponse()
     {
-        // Arrange
-        var client = _factory.CreateClient();
-
         // Act
-        var response = await client.GetAsync("/test");
+        var response = await _client.GetAsync("/test");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
