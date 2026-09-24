@@ -1,17 +1,12 @@
 <!--
 ### Sync Impact Report
-- Version change: Initial scaffold -> 1.0.0
+- Version change: 1.0.0 -> 1.1.0
 - Modified principles:
-  - [PRINCIPLE_1_NAME] -> I. Zero-Framework Vanilla TypeScript SPA
-  - [PRINCIPLE_2_NAME] -> II. Strict Client-Side Rendering & JSON Web API Boundary
-  - [PRINCIPLE_3_NAME] -> III. Architectural Boundaries & Workspace Segregation
-  - [PRINCIPLE_4_NAME] -> IV. Simplicity, Readability & Function Over Styling (KISS)
-  - [PRINCIPLE_5_NAME] -> V. High Performance Standards
+  - VI. Mandatory Automated Testing & Tooling Compliance -> VI. Mandatory Automated Testing, Linting & Tooling Compliance
 - Added principles:
-  - VI. Mandatory Automated Testing & Tooling Compliance
+  - VII. Clarification Over Assumption (Ask When Unsure)
 - Added sections:
-  - Technology Stack & Build Requirements
-  - Development Workflow & Quality Gates
+  - None
 - Removed sections:
   - None
 - Follow-up TODOs:
@@ -46,18 +41,23 @@ Simple design MUST always be favored over complicated architecture. Code readabi
 Client and server performance is highly valued across all operations. The backend server MUST utilize non-blocking asynchronous I/O and efficient file system enumeration. The frontend client MUST maintain a lightweight footprint, avoiding unnecessary DOM re-renders and memory leaks during large directory traversals.
 *Rationale*: File and directory hierarchies can scale to thousands of items; efficient I/O and lightweight rendering guarantee a responsive user experience.
 
-### VI. Mandatory Automated Testing & Tooling Compliance
-Automated testing and SDK tooling compliance are non-negotiable:
-- Frontend code MUST include unit and component-level tests run via Vitest, accompanied by strict TypeScript type checking (`tsc`).
-- Backend code MUST include unit and integration tests run via xUnit and `Microsoft.AspNetCore.Mvc.Testing`.
-- The entire solution MUST build, run, and test cleanly using standard command-line SDK tools (`dotnet`, `npm`) and VS Code without reliance on proprietary IDE features.
-*Rationale*: Guarantees regressions are caught early, contracts remain verified, and any developer can build and test from standard environments.
+### VI. Mandatory Automated Testing, Linting & Tooling Compliance
+Automated testing, linting compliance, and standard SDK tooling are non-negotiable across all project code:
+- Both frontend and backend code MUST always pass linting, formatting, and static analysis without warnings or errors.
+- Frontend code MUST include unit and component-level tests run via Vitest, accompanied by strict TypeScript type checking (`tsc`) and linter checks with zero errors or warnings.
+- Backend code MUST include unit and integration tests run via xUnit and `Microsoft.AspNetCore.Mvc.Testing`, alongside .NET code analysis and formatting checks with zero warnings or errors.
+- The entire solution MUST build, lint, run, and test cleanly using standard command-line SDK tools (`dotnet`, `npm`) and VS Code without reliance on proprietary IDE features.
+*Rationale*: Guarantees regressions are caught early, code cleanliness and consistent conventions are preserved, contracts remain verified, and any developer can build and test from standard environments.
+
+### VII. Clarification Over Assumption (Ask When Unsure)
+Whenever requirements, system contracts, architecture, or expected behaviors are ambiguous, underspecified, or uncertain, the AI agent (and developers) MUST explicitly ask the user for clarification before making assumptions or proceeding with implementation. Guessing or silently proceeding with arbitrary defaults is strictly forbidden.
+*Rationale*: Prevents architectural drift, misaligned API contracts, rework, and unneeded complexity caused by proceeding on unverified assumptions.
 
 ## Technology Stack & Build Requirements
 
 The project adheres to the following foundational technology specifications:
-- **Backend**: .NET 8 (C#) using ASP.NET Core Web API.
-- **Frontend**: Vanilla TypeScript built and served with Vite.
+- **Backend**: .NET 8 (C#) using ASP.NET Core Web API with Roslyn analyzers and code formatting enforcement.
+- **Frontend**: Vanilla TypeScript built and served with Vite, enforced via TypeScript compiler checks and linting.
 - **Data Exchange**: JSON payloads over HTTP.
 - **Build & Development Tooling**: Standard .NET 8 SDK CLI (`dotnet build`, `dotnet test`, `dotnet run`) and Node.js/npm CLI (`npm run dev`, `npm run build`, `npm test`, `npm run typecheck`), fully compatible with VS Code.
 - **Configuration & Security**: Secrets and environment-specific settings MUST use environment variables or local gitignored configurations; no credentials or secrets may ever be committed.
@@ -67,14 +67,16 @@ The project adheres to the following foundational technology specifications:
 All development activities MUST pass through structured quality gates before integration:
 1. **Contract Synchronization**: Any API or schema change MUST update both backend endpoint models and frontend client contracts in the same change set.
 2. **Quality Gates**:
-   - Backend validation: `dotnet build` and `dotnet test` MUST pass with zero warnings/errors.
-   - Frontend validation: `npm run typecheck`, `npm test`, and `npm run build` MUST pass cleanly.
+   - Backend validation: `dotnet build`, analyzer/lint checks, and `dotnet test` MUST pass with zero warnings/errors.
+   - Frontend validation: `npm run typecheck`, linter verification, `npm test`, and `npm run build` MUST pass cleanly.
 3. **Scope Discipline**: Changes MUST be strictly scoped to their respective application areas (`backend/` or `frontend/`). Unrelated cleanups or refactorings MUST NOT be bundled with functional changes.
+4. **Ambiguity Resolution**: If any requirement or constraint is unclear at any stage of the workflow, execution MUST pause to seek clarification.
 
 ## Governance
 
 This constitution represents the foundational policy of the project and supersedes all informal development practices.
 - **Compliance**: All pull requests, code modifications, and AI-assisted workflows MUST verify compliance with every principle defined herein before merging.
+- **Ambiguity Rule**: When encountering ambiguity or uncertainty regarding implementation details, requirements, or design trade-offs, agents and contributors MUST ask for clarification rather than inferring or assuming.
 - **Amendments**: Amendments require documented rationale, an evaluation of impact across existing frontend and backend implementations, and formal approval.
 - **Versioning Policy**: This document follows Semantic Versioning (MAJOR.MINOR.PATCH):
   - MAJOR: Removal or fundamental modification of an established core principle (e.g., introducing a frontend framework or server-side rendering).
@@ -82,4 +84,4 @@ This constitution represents the foundational policy of the project and supersed
   - PATCH: Clarifications, typographical fixes, and non-semantic refinements.
 - **Runtime Guidance**: Operational development guidelines, scripts, and local developer commands are documented in [AGENTS.md](file:///C:/Users/dwcar/repos/ml-test-project/AGENTS.md).
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-24 | **Last Amended**: 2026-09-24
+**Version**: 1.1.0 | **Ratified**: 2026-09-24 | **Last Amended**: 2026-09-24
