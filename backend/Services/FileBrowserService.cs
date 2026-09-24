@@ -18,18 +18,28 @@ namespace TestProject.Services
             _contentTypeProvider = new FileExtensionContentTypeProvider();
         }
 
+        public static string NormalizeSeparators(string? path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
+            }
+
+            return path.Replace('\\', '/');
+        }
+
         public string ResolveAndValidatePath(string? relativePath, bool mustBeDirectory = false)
         {
             var rootWithoutTrailing = _options.GetCanonicalRootPath()
                 .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             var canonicalRootWithSeparator = rootWithoutTrailing + Path.DirectorySeparatorChar;
 
-            var safeRelativePath = relativePath ?? string.Empty;
+            var safeRelativePath = NormalizeSeparators(relativePath);
 
             // Trim leading slashes to prevent escaping root via virtual root navigation
-            if (safeRelativePath.StartsWith('/') || safeRelativePath.StartsWith('\\'))
+            if (safeRelativePath.StartsWith('/'))
             {
-                safeRelativePath = safeRelativePath.TrimStart('/', '\\');
+                safeRelativePath = safeRelativePath.TrimStart('/');
             }
 
             string canonicalTarget;

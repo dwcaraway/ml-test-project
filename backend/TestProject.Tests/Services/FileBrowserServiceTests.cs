@@ -60,6 +60,15 @@ namespace TestProject.Tests.Services
             Assert.Equal(Path.GetFullPath(expected), resolved);
         }
 
+        [Fact]
+        public void ResolveAndValidatePath_SubdirectoryWithBackslash_ResolvesCorrectly()
+        {
+            var resolved = _service.ResolveAndValidatePath("docs\\manual.pdf", mustBeDirectory: false);
+            var expected = Path.Combine(_testRoot, "docs", "manual.pdf");
+
+            Assert.Equal(Path.GetFullPath(expected), resolved);
+        }
+
         [Theory]
         [InlineData("../")]
         [InlineData("..\\")]
@@ -70,6 +79,18 @@ namespace TestProject.Tests.Services
         public void ResolveAndValidatePath_PathTraversal_ThrowsSecurityException(string maliciousPath)
         {
             Assert.Throws<SecurityException>(() => _service.ResolveAndValidatePath(maliciousPath));
+        }
+
+        [Theory]
+        [InlineData("..\\", "../")]
+        [InlineData("..\\..\\Windows\\System32", "../../Windows/System32")]
+        [InlineData("docs\\manual.pdf", "docs/manual.pdf")]
+        [InlineData("docs/sub\\file.txt", "docs/sub/file.txt")]
+        [InlineData("\\leading\\path", "/leading/path")]
+        public void NormalizeSeparators_NormalizesBackslashesToForwardSlashes(string input, string expected)
+        {
+            var result = FileBrowserService.NormalizeSeparators(input);
+            Assert.Equal(expected, result);
         }
 
         [Fact]
