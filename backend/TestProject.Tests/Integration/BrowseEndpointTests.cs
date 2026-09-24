@@ -5,12 +5,97 @@ using Xunit;
 
 namespace TestProject.Tests.Integration
 {
+    public sealed class BrowseTestDataFixture : IDisposable
+    {
+        private readonly List<string> _createdFiles = new();
+        private readonly string _rootPath;
+
+        public BrowseTestDataFixture()
+        {
+            _rootPath = ResolveStorageRoot();
+            EnsureBrowseFiles();
+        }
+
+        private string ResolveStorageRoot()
+        {
+            var candidates = new[]
+            {
+                Path.Combine(Directory.GetCurrentDirectory(), "storage"),
+                Path.Combine(Directory.GetCurrentDirectory(), "..", "storage"),
+                Path.Combine(AppContext.BaseDirectory, "storage"),
+                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "storage"),
+                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "storage")
+            };
+
+            foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                var fullPath = Path.GetFullPath(candidate);
+                if (Directory.Exists(fullPath))
+                {
+                    return fullPath;
+                }
+            }
+
+            return Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "storage"));
+        }
+
+        private void EnsureBrowseFiles()
+        {
+            Directory.CreateDirectory(_rootPath);
+
+            var docsDirectory = Path.Combine(_rootPath, "docs");
+            Directory.CreateDirectory(docsDirectory);
+
+            CreateFileIfMissing(Path.Combine(_rootPath, "file1.txt"), "Hello, this is file1.txt");
+            CreateFileIfMissing(Path.Combine(docsDirectory, "readme.txt"), "This is documentation inside docs/readme.txt");
+        }
+
+        private void CreateFileIfMissing(string path, string content)
+        {
+            if (File.Exists(path))
+            {
+                return;
+            }
+
+            var directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            File.WriteAllText(path, content);
+            _createdFiles.Add(path);
+        }
+
+        public void Dispose()
+        {
+            foreach (var file in _createdFiles)
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+            }
+
+            var docsDirectory = Path.Combine(_rootPath, "docs");
+            if (Directory.Exists(docsDirectory) && !Directory.EnumerateFileSystemEntries(docsDirectory).Any())
+            {
+                Directory.Delete(docsDirectory, false);
+            }
+
+            if (Directory.Exists(_rootPath) && !Directory.EnumerateFileSystemEntries(_rootPath).Any())
+            {
+                Directory.Delete(_rootPath, false);
+            }
+        }
+    }
+
     [Collection("WebRootCollection")]
-    public class BrowseEndpointTests
+    public class BrowseEndpointTests : IClassFixture<BrowseTestDataFixture>
     {
         private readonly HttpClient _client;
 
-        public BrowseEndpointTests(TestAppFactory factory)
+        public BrowseEndpointTests(TestAppFactory factory, BrowseTestDataFixture fixture)
         {
             WebRootTestBootstrapper.EnsureIndexHtmlExists();
             _client = factory.CreateClient();
