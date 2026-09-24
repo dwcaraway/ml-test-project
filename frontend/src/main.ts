@@ -1,20 +1,31 @@
-import { fetchApiMessage } from './api';
+import { Router } from './core/router';
+import { HomeView } from './views/home-view';
+import { DetailView } from './views/detail-view';
+import { NotFoundView } from './views/not-found-view';
 
-export function initializeApp(): void {
-  const fetchButton = document.getElementById('fetch-btn');
-  const statusElement = document.getElementById('api-status');
-
-  if (fetchButton && statusElement) {
-    fetchButton.addEventListener('click', async () => {
-      statusElement.textContent = 'Fetching...';
-      try {
-        const message = await fetchApiMessage();
-        statusElement.textContent = `API Response: ${message}`;
-      } catch (error) {
-        statusElement.textContent = `Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      }
-    });
+export function initializeApp(containerId = 'app'): Router | null {
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.error(`Container element #${containerId} not found.`);
+    return null;
   }
+
+  const router = new Router(container);
+  router
+    .register({
+      path: '/',
+      viewFactory: () => new HomeView(),
+      title: 'Home - SPA Explorer',
+    })
+    .register({
+      path: '/detail/:id',
+      viewFactory: () => new DetailView(),
+      title: 'Detail - SPA Explorer',
+    })
+    .setNotFoundView(() => new NotFoundView());
+
+  router.start();
+  return router;
 }
 
 if (typeof window !== 'undefined') {
@@ -22,4 +33,3 @@ if (typeof window !== 'undefined') {
     initializeApp();
   });
 }
-

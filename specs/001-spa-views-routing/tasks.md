@@ -10,9 +10,9 @@
 
 **Purpose**: Project initialization, directory structure, shared contracts, and server-side fallback configuration.
 
-- [ ] T001 Create frontend directory layout for `frontend/src/core/`, `frontend/src/components/`, and `frontend/src/views/`
-- [ ] T002 [P] Define core router and view TypeScript contracts in `frontend/src/core/types.ts` per `specs/001-spa-views-routing/contracts/router.contract.ts`
-- [ ] T003 [P] Configure ASP.NET Core SPA fallback routing using `app.MapFallbackToFile("index.html")` in `backend/Program.cs` per `specs/001-spa-views-routing/contracts/spa-fallback.contract.md`
+- [X] T001 Create frontend directory layout for `frontend/src/core/`, `frontend/src/components/`, and `frontend/src/views/`
+- [X] T002 [P] Define core router and view TypeScript contracts in `frontend/src/core/types.ts` per `specs/001-spa-views-routing/contracts/router.contract.ts`
+- [X] T003 [P] Configure ASP.NET Core SPA fallback routing using `app.MapFallbackToFile("index.html")` in `backend/Program.cs` per `specs/001-spa-views-routing/contracts/spa-fallback.contract.md`
 
 ---
 
@@ -22,10 +22,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this foundational phase is complete.
 
-- [ ] T004 [P] Implement backend integration test in `backend/TestProject.Tests/Integration/SpaFallbackTests.cs` to verify fallback routing serves `index.html` for client paths (e.g. `/detail/123`) and preserves API route `/test`
-- [ ] T005 [P] Implement base component and view lifecycle abstractions with `AbortController` event listener cleanup in `frontend/src/core/view.ts` and `frontend/src/core/component.ts`
-- [ ] T006 Implement native HTML5 History API `Router` class in `frontend/src/core/router.ts` supporting path regex matching, parameter extraction (`:([a-zA-Z0-9_]+)`), route registration, and history event handling (`pushState`, `replaceState`, `popstate`)
-- [ ] T007 [P] Write unit tests for `Router` route registration, parameter extraction, and fallback resolution in `frontend/tests/router.test.ts`
+- [X] T004 [P] Implement backend integration test in `backend/TestProject.Tests/Integration/SpaFallbackTests.cs` to verify fallback routing serves `index.html` for client paths (e.g. `/detail/123`) and preserves API route `/test`
+- [X] T005 [P] Implement base component and view lifecycle abstractions with `AbortController` event listener cleanup in `frontend/src/core/view.ts` and `frontend/src/core/component.ts`
+- [X] T006 Implement native HTML5 History API `Router` class in `frontend/src/core/router.ts` supporting path regex matching, parameter extraction (`:([a-zA-Z0-9_]+)`), route registration, and history event handling (`pushState`, `replaceState`, `popstate`)
+- [X] T007 [P] Write unit tests for `Router` route registration, parameter extraction, and fallback resolution in `frontend/tests/router.test.ts`
 
 **Checkpoint**: Foundation ready — router engine and base contracts verified. User story implementation can begin.
 
@@ -41,13 +41,13 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T008 [P] [US1] Write unit and integration tests in `frontend/tests/deep-linking.test.ts` verifying direct URL navigation to `/`, `/detail/:id` with parameter extraction, and 404 fallback routing
+- [X] T008 [P] [US1] Write unit and integration tests in `frontend/tests/deep-linking.test.ts` verifying direct URL navigation to `/`, `/detail/:id` with parameter extraction, and 404 fallback routing
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Implement `NotFoundView` in `frontend/src/views/not-found-view.ts` conforming to `IView` to display a 404 message and a recovery link navigating to `/`
-- [ ] T010 [P] [US1] Implement baseline `HomeView` in `frontend/src/views/home-view.ts` and `DetailView` in `frontend/src/views/detail-view.ts` displaying extracted route parameters (`id`)
-- [ ] T011 [US1] Wire application bootstrap in `frontend/src/main.ts` and `frontend/index.html` to register routes (`/`, `/detail/:id`), set `NotFoundView`, bind container element `#app`, and start the router
+- [X] T009 [P] [US1] Implement `NotFoundView` in `frontend/src/views/not-found-view.ts` conforming to `IView` to display a 404 message and a recovery link navigating to `/`
+- [X] T010 [P] [US1] Implement baseline `HomeView` in `frontend/src/views/home-view.ts` and `DetailView` in `frontend/src/views/detail-view.ts` displaying extracted route parameters (`id`)
+- [X] T011 [US1] Wire application bootstrap in `frontend/src/main.ts` and `frontend/index.html` to register routes (`/`, `/detail/:id`), set `NotFoundView`, bind container element `#app`, and start the router
 
 **Checkpoint**: User Story 1 functional and independently testable as the core MVP. Direct deep-linking and 404 handling verified.
 
@@ -61,12 +61,12 @@
 
 ### Tests for User Story 2
 
-- [ ] T012 [P] [US2] Write unit tests in `frontend/tests/history-navigation.test.ts` verifying programmatic and link-based view navigation, history stack updates via `pushState`, and `popstate` Back/Forward traversal
+- [X] T012 [P] [US2] Write unit tests in `frontend/tests/history-navigation.test.ts` verifying programmatic and link-based view navigation, history stack updates via `pushState`, and `popstate` Back/Forward traversal
 
 ### Implementation for User Story 2
 
-- [ ] T013 [P] [US2] Implement global internal link click interceptor in `frontend/src/core/router.ts` to intercept `<a>` navigation events with matching origins and route via `router.navigate()`
-- [ ] T014 [US2] Update `HomeView` in `frontend/src/views/home-view.ts` with navigation links to sample detail pages (`/detail/item-1`, `/detail/item-2`), and update `DetailView` in `frontend/src/views/detail-view.ts` with a "Back to Home" navigation action
+- [X] T013 [P] [US2] Implement global internal link click interceptor in `frontend/src/core/router.ts` to intercept `<a>` navigation events with matching origins and route via `router.navigate()`
+- [X] T014 [US2] Update `HomeView` in `frontend/src/views/home-view.ts` with navigation links to sample detail pages (`/detail/item-1`, `/detail/item-2`), and update `DetailView` in `frontend/src/views/detail-view.ts` with a "Back to Home" navigation action
 
 **Checkpoint**: User Stories 1 and 2 work independently and together. Seamless in-app navigation and browser history traversal verified.
 
@@ -80,13 +80,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T015 [P] [US3] Write unit tests in `frontend/tests/view-lifecycle.test.ts` verifying view composition, child component mounting, unmounting, and `destroy()` / `AbortController` event listener cleanup
+- [X] T015 [P] [US3] Write unit tests in `frontend/tests/view-lifecycle.test.ts` verifying view composition, child component mounting, unmounting, and `destroy()` / `AbortController` event listener cleanup
 
 ### Implementation for User Story 3
 
-- [ ] T016 [P] [US3] Implement reusable `NavbarComponent` in `frontend/src/components/navbar.ts` supporting navigation links and active route highlighting
-- [ ] T017 [P] [US3] Implement `HeroCardComponent` in `frontend/src/components/hero-card.ts` for structured content presentation
-- [ ] T018 [US3] Integrate `NavbarComponent` and `HeroCardComponent` into `HomeView` (`frontend/src/views/home-view.ts`) and `DetailView` (`frontend/src/views/detail-view.ts`), ensuring complete component lifecycle and cleanup
+- [X] T016 [P] [US3] Implement reusable `NavbarComponent` in `frontend/src/components/navbar.ts` supporting navigation links and active route highlighting
+- [X] T017 [P] [US3] Implement `HeroCardComponent` in `frontend/src/components/hero-card.ts` for structured content presentation
+- [X] T018 [US3] Integrate `NavbarComponent` and `HeroCardComponent` into `HomeView` (`frontend/src/views/home-view.ts`) and `DetailView` (`frontend/src/views/detail-view.ts`), ensuring complete component lifecycle and cleanup
 
 **Checkpoint**: All user stories fully implemented. Component composition and leak-free lifecycle management verified.
 
@@ -96,10 +96,10 @@
 
 **Purpose**: Verification, linting, formatting, documentation, and end-to-end quickstart execution.
 
-- [ ] T019 [P] Verify TypeScript compilation and linting pass with zero errors/warnings via `npm run typecheck` in `frontend/`
-- [ ] T020 [P] Run full test suites via `npm test` in `frontend/` and `dotnet test` in `backend/` to ensure zero regressions across both layers
-- [ ] T021 Execute full validation workflow following `specs/001-spa-views-routing/quickstart.md` across dev server and production build
-- [ ] T022 [P] Update project documentation and architecture notes in `README.md`
+- [X] T019 [P] Verify TypeScript compilation and linting pass with zero errors/warnings via `npm run typecheck` in `frontend/`
+- [X] T020 [P] Run full test suites via `npm test` in `frontend/` and `dotnet test` in `backend/` to ensure zero regressions across both layers
+- [X] T021 Execute full validation workflow following `specs/001-spa-views-routing/quickstart.md` across dev server and production build
+- [X] T022 [P] Update project documentation and architecture notes in `README.md`
 
 ---
 
