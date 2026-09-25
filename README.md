@@ -41,7 +41,8 @@ ml-test-project/
 │   ├── 001-spa-views-routing/      # SPA Views & Deep-Linking Routing specification
 │   ├── 002-file-browser-api/       # File & Directory Browsing and Download Web API specification
 │   ├── 003-file-explorer-view/     # Frontend File Explorer View & Breadcrumb Navigation specification
-│   └── 004-item-deletion-and-counts/ # File Explorer Item Counts and Secure Deletion specification
+│   ├── 004-item-deletion-and-counts/ # File Explorer Item Counts and Secure Deletion specification
+│   └── 005-file-upload/            # File Upload with Conflict Renaming and Size Limits specification
 ├── storage/                        # Server-side home root directory for file browsing & download (sample data)
 ├── seed-storage.ps1                # Generates a local storage tree for API testing
 ├── .github/workflows/              # CI/CD automation workflows
@@ -220,6 +221,33 @@ Permanently deletes a file or directory located within the configured storage ro
 > [!NOTE]
 > Deleting a folder recursively deletes all nested files and subdirectories within that folder. Attempts to delete the root storage directory itself are strictly prohibited.
 
+##### 4. Upload File (`POST /api/upload`)
+
+Uploads a file via `multipart/form-data` to the designated directory path within the configured storage root.
+
+* **Query Parameters:**
+  * `path` (*optional*, default: `""`): Target directory path within the storage root where the file will be uploaded.
+
+* **Request Body:**
+  * `multipart/form-data` containing the file payload with form field name `file` (maximum allowed size: 8 MB / 8,388,608 bytes).
+
+* **Non-Destructive Conflict Resolution:**
+  * Existing files are **never overwritten**. If a file with the same name already exists in the destination folder, the server automatically appends a numeric suffix before the file extension (`_copy1`, or `_copy2` if `_copy1` exists, etc.).
+
+* **Response (`200 OK`):**
+  ```json
+  {
+    "fileName": "sample_copy1.txt",
+    "path": "docs",
+    "sizeBytes": 1024,
+    "message": "File uploaded successfully."
+  }
+  ```
+
+* **Error Responses:**
+  * `400 Bad Request`: Missing file payload, file size strictly exceeds the 8 MB limit, or path traversal attempt (`../`, `..\\`).
+  * `404 Not Found`: Target destination directory does not exist.
+
 #### Security & Path Traversal Prevention
 
 All incoming paths are canonicalized and strictly verified against the storage root directory. Any attempt to navigate outside the home directory via `../`, `..\\`, absolute paths, or prefix collision attempts is blocked with `400 Bad Request`.
@@ -279,8 +307,9 @@ The frontend includes a responsive, zero-framework File Explorer view accessible
 * **Directory Browsing**: Dynamically queries the backend API (`GET /api/browse?path=...`) and displays files and folders in a semantic table.
 * **Schema-Compliant Size Formatting**: Folders strictly render `"-"` in the size column, while files display their byte size.
 * **Direct File Streaming Downloads**: Files feature a direct download link targeting `GET /api/download?path={filePath}`, utilizing native browser download capabilities without memory buffering. Folders omit download links.
-* **Item Counts Summary Footer**: Prominently displays the total count of folders and non-folder files on the current directory results at the bottom of the table (`Folders: X | Files: Y`), automatically recalculating when items are removed.
+* **Item Counts Summary Footer**: Prominently displays the total count of folders and non-folder files on the current directory results at the bottom of the table (`Folders: X | Files: Y`), automatically recalculating when items are removed or added.
 * **Safe Item Deletion with Confirmation**: Both files and folders provide an accessible **Delete** action in the Actions column. Clicking Delete presents a browser confirmation prompt (`window.confirm`) identifying the item name and explicitly warning that the action is permanent and unrecoverable. Upon confirmation, the deletion request is dispatched to `DELETE /api/delete`, removing the item from the view and decrementing counters immediately without requiring a full page refresh.
+* **Native File Upload with Conflict Handling**: An **Upload** button is placed above and to the right of the File Explorer view. Selecting it opens the native OS file picker to upload files directly into the active viewing directory. File size is enforced up to 8 MB with immediate client-side and server-side validation. Existing files are protected from accidental overwrite through automatic numeric copy postfixing (`_copy1`, `_copy2`, etc.), immediately updating the item list and incrementing the footer file counter.
 * **Dynamic Breadcrumb Navigation**:
   * Hidden when viewing the root storage directory.
   * When viewing subdirectories, displays a hierarchical path starting with `Home` (`Home > docs`).

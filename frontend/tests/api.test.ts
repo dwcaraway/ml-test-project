@@ -163,3 +163,114 @@ describe('deleteItem', () => {
   });
 });
 
+describe('uploadFile', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('sends POST request with FormData and encoded path and returns UploadResponse on success', async () => {
+    const mockResponse = {
+      fileName: 'report_copy1.pdf',
+      path: 'docs/sub',
+      sizeBytes: 1024,
+      message: 'File uploaded successfully.',
+    };
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    });
+
+    const file = new File(['dummy content'], 'report.pdf', { type: 'application/pdf' });
+    const { uploadFile } = await import('../src/api');
+    const result = await uploadFile('docs/sub', file);
+
+    expect(result).toEqual(mockResponse);
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/upload?path=docs%2Fsub',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.any(FormData),
+      })
+    );
+  });
+
+  it('uploads to root when path is empty string', async () => {
+    const mockResponse = {
+      fileName: 'root-file.txt',
+      path: '',
+      sizeBytes: 50,
+      message: 'File uploaded successfully.',
+    };
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    });
+
+    const file = new File(['content'], 'root-file.txt', { type: 'text/plain' });
+    const { uploadFile } = await import('../src/api');
+    const result = await uploadFile('', file);
+
+    expect(result).toEqual(mockResponse);
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/upload',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.any(FormData),
+      })
+    );
+  });
+
+  it('throws error with server message when response is not ok', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: 'Invalid path or path traversal detected.' }),
+    });
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const { uploadFile } = await import('../src/api');
+    await expect(uploadFile('../outside', file)).rejects.toThrow(
+      'Invalid path or path traversal detected.'
+    );
+  });
+
+  it('throws HTTP status error fallback when error response is not json', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => {
+        throw new Error('Not JSON');
+      },
+    });
+
+    const file = new File(['content'], 'error.txt', { type: 'text/plain' });
+    const { uploadFile } = await import('../src/api');
+    await expect(uploadFile('docs', file)).rejects.toThrow(
+      'HTTP error! status: 500'
+    );
+  });
+
+  it('throws error immediately if file size strictly exceeds 8 MB without calling fetch', async () => {
+    global.fetch = vi.fn();
+
+    // Mock a file larger than 8 MB (8,388,608 bytes)
+    const largeFile = new File(['a'], 'toolarge.bin');
+    Object.defineProperty(largeFile, 'size', { value: 8 * 1024 * 1024 + 1 });
+
+    const { uploadFile } = await import('../src/api');
+    await expect(uploadFile('docs', largeFile)).rejects.toThrow(
+      'File exceeds the maximum allowed size of 8 MB.'
+    );
+
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+});
+

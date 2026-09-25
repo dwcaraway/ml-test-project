@@ -1,4 +1,5 @@
 using System.Security;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TestProject.Models;
 using TestProject.Services;
@@ -87,6 +88,59 @@ namespace TestProject.Controllers
             catch (FileNotFoundException)
             {
                 return NotFound(new { error = "Item not found." });
+            }
+        }
+
+        [HttpPost("upload")]
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        public async Task<IActionResult> Upload([FromQuery] string? path, CancellationToken cancellationToken)
+        {
+            _logger.LogDebug("Upload called for path: {Path}", path);
+
+            if (!Request.HasFormContentType)
+            {
+                return BadRequest(new { error = "A file must be provided for upload." });
+            }
+
+            IFormFile? file = null;
+            try
+            {
+                if (Request.Form.Files.Count > 0)
+                {
+                    file = Request.Form.Files["file"] ?? Request.Form.Files[0];
+                }
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { error = "A file must be provided for upload." });
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { error = "A file must be provided for upload." });
+            }
+
+            try
+            {
+                var result = await _fileBrowserService.UploadFileAsync(path, file, cancellationToken);
+                return Ok(result);
+            }
+            catch (SecurityException)
+            {
+                return BadRequest(new { error = "Invalid path or path traversal detected." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return NotFound(new { error = "Destination directory not found." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error uploading file.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { error = "An error occurred while uploading the file." });
             }
         }
     }
