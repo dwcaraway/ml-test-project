@@ -2,6 +2,7 @@ import { Router } from './core/router';
 import { HomeView } from './views/home-view';
 import { DetailView } from './views/detail-view';
 import { NotFoundView } from './views/not-found-view';
+import { FileExplorerView } from './views/file-explorer-view';
 
 export function initializeApp(containerId = 'app'): Router | null {
   const container = document.getElementById(containerId);
@@ -16,6 +17,11 @@ export function initializeApp(containerId = 'app'): Router | null {
       path: '/',
       viewFactory: () => new HomeView(),
       title: 'Home - SPA Explorer',
+    })
+    .register({
+      path: '/files',
+      viewFactory: () => new FileExplorerView(router),
+      title: 'Files - SPA Explorer',
     })
     .register({
       path: '/detail/:id',

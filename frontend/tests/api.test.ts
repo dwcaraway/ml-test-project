@@ -33,3 +33,77 @@ describe('fetchApiMessage', () => {
   });
 });
 
+describe('fetchBrowseDirectory', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('fetches root directory without query param', async () => {
+    const mockResponse = {
+      currentPath: '',
+      page: 1,
+      pageSize: 50,
+      totalCount: 1,
+      totalPages: 1,
+      items: [{ name: 'folder1', size: '-', type: 'folder' }],
+    };
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    });
+
+    const result = await (await import('../src/api')).fetchBrowseDirectory();
+    expect(result).toEqual(mockResponse);
+    expect(global.fetch).toHaveBeenCalledWith('/api/browse');
+  });
+
+  it('fetches subdirectory with encoded query param', async () => {
+    const mockResponse = {
+      currentPath: 'docs/sub',
+      page: 1,
+      pageSize: 50,
+      totalCount: 0,
+      totalPages: 0,
+      items: [],
+    };
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    });
+
+    const result = await (await import('../src/api')).fetchBrowseDirectory('docs/sub');
+    expect(result).toEqual(mockResponse);
+    expect(global.fetch).toHaveBeenCalledWith('/api/browse?path=docs%2Fsub');
+  });
+
+  it('throws server error message if present in response json', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: 'Invalid path' }),
+    });
+
+    await expect((await import('../src/api')).fetchBrowseDirectory('invalid')).rejects.toThrow('Invalid path');
+  });
+
+  it('throws HTTP status error if error json is missing', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: async () => {
+        throw new Error('Not JSON');
+      },
+    });
+
+    await expect((await import('../src/api')).fetchBrowseDirectory('missing')).rejects.toThrow('HTTP error! status: 404');
+  });
+});
+

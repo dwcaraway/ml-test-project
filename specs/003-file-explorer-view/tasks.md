@@ -10,8 +10,8 @@
 
 **Purpose**: API client contracts, data models, and global navigation links.
 
-- [ ] T001 [P] Define `FileSystemItem` and `BrowseResponse` interfaces and implement `fetchBrowseDirectory` API client function in `frontend/src/api.ts`
-- [ ] T002 [P] Add `Files` navigation link pointing to `/files` in `NavbarComponent` in `frontend/src/components/navbar.ts`
+- [X] T001 [P] Define `FileSystemItem` and `BrowseResponse` interfaces and implement `fetchBrowseDirectory` API client function in `frontend/src/api.ts`
+- [X] T002 [P] Add `Files` navigation link pointing to `/files` in `NavbarComponent` in `frontend/src/components/navbar.ts`
 
 ---
 
@@ -21,8 +21,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this foundational phase is complete.
 
-- [ ] T003 [P] Write unit tests in `frontend/tests/router-query.test.ts` verifying `Router` route matching with query parameters (e.g. `/files?path=docs`) and history synchronization
-- [ ] T004 Enhance `Router` in `frontend/src/core/router.ts` to decouple pathname matching from query parameters, preserve query strings in `pushState`/`replaceState`, and maintain search parameters on internal link clicks
+- [X] T003 [P] Write unit tests in `frontend/tests/router-query.test.ts` verifying `Router` route matching with query parameters (e.g. `/files?path=docs`) and history synchronization
+- [X] T004 Enhance `Router` in `frontend/src/core/router.ts` to decouple pathname matching from query parameters, preserve query strings in `pushState`/`replaceState`, and maintain search parameters on internal link clicks
 
 **Checkpoint**: Foundation ready — router supports query parameters and history navigation. User story implementation can begin.
 
@@ -38,14 +38,14 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T005 [P] [US1] Write unit tests in `frontend/tests/components/file-list.test.ts` verifying table rendering, folder size `"-"`, file byte count display, and empty directory state
-- [ ] T006 [P] [US1] Write integration tests in `frontend/tests/views/file-explorer-view.test.ts` verifying `FileExplorerView` loading lifecycle, API data binding, and error notification banner
+- [X] T005 [P] [US1] Write unit tests in `frontend/tests/components/file-list.test.ts` verifying table rendering, folder size `"-"`, file byte count display, and empty directory state
+- [X] T006 [P] [US1] Write integration tests in `frontend/tests/views/file-explorer-view.test.ts` verifying `FileExplorerView` loading lifecycle, API data binding, and error notification banner
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Implement `FileListComponent` in `frontend/src/components/file-list.ts` rendering semantic table with name, size (`"-"` for folders), and empty-state messaging
-- [ ] T008 [US1] Implement `FileExplorerView` in `frontend/src/views/file-explorer-view.ts` managing fetch lifecycle, loading indicator, and error banner with retry option
-- [ ] T009 [US1] Register `/files` route mapping to `FileExplorerView` in `frontend/src/main.ts` and verify initial root rendering in end-to-end test
+- [X] T007 [US1] Implement `FileListComponent` in `frontend/src/components/file-list.ts` rendering semantic table with name, size (`"-"` for folders), and empty-state messaging
+- [X] T008 [US1] Implement `FileExplorerView` in `frontend/src/views/file-explorer-view.ts` managing fetch lifecycle, loading indicator, and error banner with retry option
+- [X] T009 [US1] Register `/files` route mapping to `FileExplorerView` in `frontend/src/main.ts` and verify initial root rendering in end-to-end test
 
 **Checkpoint**: User Story 1 fully functional and independently testable as the core directory browsing MVP.
 
@@ -59,13 +59,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T010 [P] [US2] Write unit tests in `frontend/tests/components/breadcrumb.test.ts` verifying breadcrumb hiding at root, segment rendering, `Home` root label, collapsing when depth > 3, and inline expansion on clicking `...`
-- [ ] T011 [P] [US2] Write integration tests in `frontend/tests/views/file-explorer-navigation.test.ts` verifying folder row click navigation, URL query parameter updates, and breadcrumb segment clicking
+- [X] T010 [P] [US2] Write unit tests in `frontend/tests/components/breadcrumb.test.ts` verifying breadcrumb hiding at root, segment rendering, `Home` root label, collapsing when depth > 3, and inline expansion on clicking `...`
+- [X] T011 [P] [US2] Write integration tests in `frontend/tests/views/file-explorer-navigation.test.ts` verifying folder row click navigation, URL query parameter updates, and breadcrumb segment clicking
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Implement `BreadcrumbComponent` in `frontend/src/components/breadcrumb.ts` with `Home` root label, depth collapsing (`depth > 3`), and inline `...` expansion toggle
-- [ ] T013 [US2] Integrate `BreadcrumbComponent` and folder row click handlers into `FileExplorerView` in `frontend/src/views/file-explorer-view.ts` triggering `router.navigate('/files?path=' + targetPath)` and history synchronization
+- [X] T012 [US2] Implement `BreadcrumbComponent` in `frontend/src/components/breadcrumb.ts` with `Home` root label, depth collapsing (`depth > 3`), and inline `...` expansion toggle
+- [X] T013 [US2] Integrate `BreadcrumbComponent` and folder row click handlers into `FileExplorerView` in `frontend/src/views/file-explorer-view.ts` triggering `router.navigate('/files?path=' + targetPath)` and history synchronization
 
 **Checkpoint**: User Stories 1 and 2 work independently and together. Directory browsing and full multi-level breadcrumb navigation verified.
 
@@ -79,11 +79,11 @@
 
 ### Tests for User Story 3
 
-- [ ] T014 [P] [US3] Write unit tests in `frontend/tests/components/file-download.test.ts` verifying presence of download links on file rows, absence on folder rows, and correct URL encoding of `/api/download?path=...`
+- [X] T014 [P] [US3] Write unit tests in `frontend/tests/components/file-download.test.ts` verifying presence of download links on file rows, absence on folder rows, and correct URL encoding of `/api/download?path=...`
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Add download action column and anchor links `<a href="/api/download?path={filePath}" download="{name}">` to `FileListComponent` in `frontend/src/components/file-list.ts`
+- [X] T015 [US3] Add download action column and anchor links `<a href="/api/download?path={filePath}" download="{name}">` to `FileListComponent` in `frontend/src/components/file-list.ts`
 
 **Checkpoint**: All user stories fully implemented. Directory browsing, breadcrumb navigation, and direct file downloads functional.
 
@@ -93,11 +93,11 @@
 
 **Purpose**: Verification, linting, formatting, documentation, and end-to-end quickstart execution.
 
-- [ ] T016 [P] Run full frontend test suite via `npm test` in `frontend/` to ensure zero regressions across all component and view tests
-- [ ] T017 [P] Verify TypeScript static type checking passes cleanly via `npm run typecheck` in `frontend/`
-- [ ] T018 [P] Run production build via `npm run build` in `frontend/` and restore `backend/wwwroot/.gitkeep`
-- [ ] T019 Execute full validation workflow following `specs/003-file-explorer-view/quickstart.md`
-- [ ] T020 [P] Update project documentation in `README.md` to document the new `/files` route, File Explorer view, and breadcrumb navigation per Constitution Principle VIII
+- [X] T016 [P] Run full frontend test suite via `npm test` in `frontend/` to ensure zero regressions across all component and view tests
+- [X] T017 [P] Verify TypeScript static type checking passes cleanly via `npm run typecheck` in `frontend/`
+- [X] T018 [P] Run production build via `npm run build` in `frontend/` and restore `backend/wwwroot/.gitkeep`
+- [X] T019 Execute full validation workflow following `specs/003-file-explorer-view/quickstart.md`
+- [X] T020 [P] Update project documentation in `README.md` to document the new `/files` route, File Explorer view, and breadcrumb navigation per Constitution Principle VIII
 
 ---
 

@@ -28,9 +28,9 @@ ml-test-project/
 ├── frontend/                       # TypeScript SPA built with Vite
 │   ├── src/                        # TypeScript source files
 │   │   ├── core/                   # Core SPA router, view, and component base classes
-│   │   ├── components/             # Reusable UI components (Navbar, HeroCard)
-│   │   ├── views/                  # Composite views (HomeView, DetailView, NotFoundView)
-│   │   ├── api.ts                  # API client logic
+│   │   ├── components/             # Reusable UI components (Navbar, HeroCard, Breadcrumb, FileList)
+│   │   ├── views/                  # Composite views (HomeView, DetailView, NotFoundView, FileExplorerView)
+│   │   ├── api.ts                  # API client logic (fetchApiMessage, fetchBrowseDirectory)
 │   │   └── main.ts                 # App initialization & route registration
 │   ├── tests/                      # Frontend unit & component tests (Vitest)
 │   ├── index.html                  # HTML entry point
@@ -39,7 +39,8 @@ ml-test-project/
 │   └── vite.config.ts              # Vite server & proxy configuration
 ├── specs/                          # Spec Kit feature specifications, plans, and tasks
 │   ├── 001-spa-views-routing/      # SPA Views & Deep-Linking Routing specification
-│   └── 002-file-browser-api/       # File & Directory Browsing and Download Web API specification
+│   ├── 002-file-browser-api/       # File & Directory Browsing and Download Web API specification
+│   └── 003-file-explorer-view/     # Frontend File Explorer View & Breadcrumb Navigation specification
 ├── storage/                        # Server-side home root directory for file browsing & download (sample data)
 ├── .github/workflows/              # CI/CD automation workflows
 ├── .specify/                       # Spec Kit project metadata & constitution
@@ -222,7 +223,24 @@ The frontend application is a modern single-page application built with TypeScri
    Open your browser at [`http://localhost:3000`](http://localhost:3000).
 
    > [!NOTE]
-   > The Vite development server is configured in `vite.config.ts` to automatically proxy requests made to `/test` to the backend at `https://localhost:7146`. Make sure the backend server is running concurrently if you want to test API interaction.
+   > The Vite development server is configured in `vite.config.ts` to automatically proxy requests made to `/test` and `/api` to the backend at `https://localhost:7146`. Make sure the backend server is running concurrently if you want to test API interaction.
+
+---
+
+### File Explorer View & Breadcrumb Navigation (`/files`)
+
+The frontend includes a responsive, zero-framework File Explorer view accessible via the global **Files** navigation link or directly at [`http://localhost:3000/files`](http://localhost:3000/files):
+
+* **Directory Browsing**: Dynamically queries the backend API (`GET /api/browse?path=...`) and displays files and folders in a semantic table.
+* **Schema-Compliant Size Formatting**: Folders strictly render `"-"` in the size column, while files display their byte size.
+* **Direct File Streaming Downloads**: Files feature a direct download link targeting `GET /api/download?path={filePath}`, utilizing native browser download capabilities without memory buffering. Folders omit download links.
+* **Dynamic Breadcrumb Navigation**:
+  * Hidden when viewing the root storage directory.
+  * When viewing subdirectories, displays a hierarchical path starting with `Home` (`Home > docs`).
+  * When directory depth exceeds 3 levels below root (e.g. `level1/level2/level3/level4`), collapses intermediate levels: `Home > ... > level4`.
+  * The `...` button expands the hidden path segments inline on click without reloading.
+  * Clicking any ancestor segment navigates directly to that folder.
+* **Deep-Linking & History Synchronization**: The current folder is preserved in the URL query string (`/files?path=docs/reports`), integrating with browser `pushState`/`popstate` so Back and Forward buttons work seamlessly.
 
 ---
 
