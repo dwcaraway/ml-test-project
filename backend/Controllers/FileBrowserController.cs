@@ -10,15 +10,21 @@ namespace TestProject.Controllers
     public class FileBrowserController : ControllerBase
     {
         private readonly IFileBrowserService _fileBrowserService;
+        private readonly ILogger<FileBrowserController> _logger;
 
-        public FileBrowserController(IFileBrowserService fileBrowserService)
+        public FileBrowserController(
+            IFileBrowserService fileBrowserService,
+            ILogger<FileBrowserController> logger)
         {
             _fileBrowserService = fileBrowserService;
+            _logger = logger;
         }
 
         [HttpGet("browse")]
         public async Task<IActionResult> Browse([FromQuery] BrowseRequest request, CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Browse called with query: {@Request}", request);
+
             try
             {
                 var response = await _fileBrowserService.BrowseDirectoryAsync(request, cancellationToken);

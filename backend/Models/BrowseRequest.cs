@@ -18,5 +18,10 @@ namespace TestProject.Models
             get => _pageSize;
             set => _pageSize = value < 1 ? 50 : (value > 100 ? 100 : value);
         }
+
+        public override string ToString()
+        {
+            return $"Path: {Path ?? "<null>"}, Page: {Page}, PageSize: {PageSize}";
+        }
     }
 }
