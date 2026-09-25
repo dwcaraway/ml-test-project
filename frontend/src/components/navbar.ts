@@ -14,6 +14,7 @@ export class NavbarComponent extends BaseComponent {
     this.currentPath = currentPath;
     this.links = links || [
       { path: '/', label: 'Home' },
+      { path: '/files', label: 'Files' },
       { path: '/detail/item-1', label: 'Item 1' },
       { path: '/detail/item-2', label: 'Item 2' },
     ];
@@ -23,12 +24,14 @@ export class NavbarComponent extends BaseComponent {
     const nav = document.createElement('nav');
     nav.className = 'navbar';
 
+    const cleanCurrent = this.currentPath.split('?')[0];
+
     for (const link of this.links) {
       const a = document.createElement('a');
       a.href = link.path;
       a.textContent = link.label;
 
-      if (this.currentPath === link.path) {
+      if (cleanCurrent === link.path) {
         a.className = 'active';
       }
 

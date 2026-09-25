@@ -1,0 +1,177 @@
+import { BaseView } from '../core/view';
+import { IRouter } from '../core/types';
+import { NavbarComponent } from '../components/navbar';
+import { BreadcrumbComponent } from '../components/breadcrumb';
+import { FileListComponent } from '../components/file-list';
+import { fetchBrowseDirectory, FileSystemItem } from '../api';
+
+export class FileExplorerView extends BaseView {
+  readonly name = 'FileExplorerView';
+
+  private currentPath = '';
+  private items: FileSystemItem[] = [];
+  private isLoading = false;
+  private errorMessage: string | null = null;
+  private contentContainer: HTMLElement | null = null;
+  private breadcrumbContainer: HTMLElement | null = null;
+  private router?: IRouter;
+
+  constructor(router?: IRouter) {
+    super();
+    this.router = router;
+  }
+
+  protected onMount(): void {
+    if (!this.container) {
+      return;
+    }
+
+    // Determine current path from params or window.location.search
+    const queryParam = this.params.path ?? new URLSearchParams(window.location.search).get('path') ?? '';
+    this.currentPath = queryParam;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'file-explorer-view';
+
+    // 1. Navbar
+    const navbar = this.registerComponent(new NavbarComponent('/files'));
+    wrapper.appendChild(navbar.render());
+
+    // 2. View Header
+    const header = document.createElement('header');
+    header.className = 'explorer-header';
+    const title = document.createElement('h2');
+    title.textContent = 'Files';
+    header.appendChild(title);
+    wrapper.appendChild(header);
+
+    // 3. Breadcrumb Container (filled when not root)
+    this.breadcrumbContainer = document.createElement('div');
+    this.breadcrumbContainer.className = 'breadcrumb-container';
+    wrapper.appendChild(this.breadcrumbContainer);
+
+    // 4. Content Area
+    this.contentContainer = document.createElement('div');
+    this.contentContainer.className = 'explorer-content';
+    wrapper.appendChild(this.contentContainer);
+
+    this.container.appendChild(wrapper);
+
+    // Fetch initial directory
+    this.loadDirectory(this.currentPath);
+  }
+
+  private async loadDirectory(path: string): Promise<void> {
+    this.isLoading = true;
+    this.errorMessage = null;
+    this.renderContent();
+
+    try {
+      const response = await fetchBrowseDirectory(path);
+      // Guard against race conditions if view unmounted or path changed
+      if (this.abortController.signal.aborted) {
+        return;
+      }
+
+      this.currentPath = response.currentPath;
+      this.items = response.items;
+      this.isLoading = false;
+      this.renderContent();
+    } catch (err: unknown) {
+      if (this.abortController.signal.aborted) {
+        return;
+      }
+
+      this.isLoading = false;
+      this.errorMessage = err instanceof Error ? err.message : 'Failed to load directory.';
+      this.renderContent();
+    }
+  }
+
+  private renderBreadcrumb(): void {
+    if (!this.breadcrumbContainer) {
+      return;
+    }
+    this.breadcrumbContainer.innerHTML = '';
+    const cleanPath = this.currentPath.replace(/^\/+|\/+$/g, '').trim();
+    if (cleanPath) {
+      const breadcrumb = this.registerComponent(
+        new BreadcrumbComponent(cleanPath, (target) => {
+          this.navigateToPath(target);
+        })
+      );
+      this.breadcrumbContainer.appendChild(breadcrumb.render());
+    }
+  }
+
+  private renderContent(): void {
+    this.renderBreadcrumb();
+
+    if (!this.contentContainer) {
+      return;
+    }
+    this.contentContainer.innerHTML = '';
+
+    if (this.isLoading) {
+      const loading = document.createElement('div');
+      loading.className = 'loading-indicator';
+      loading.textContent = 'Loading directory contents...';
+      this.contentContainer.appendChild(loading);
+      return;
+    }
+
+    if (this.errorMessage) {
+      const banner = document.createElement('div');
+      banner.className = 'error-banner';
+
+      const msg = document.createElement('p');
+      msg.className = 'error-message';
+      msg.textContent = this.errorMessage;
+      banner.appendChild(msg);
+
+      const actions = document.createElement('div');
+      actions.className = 'error-actions';
+
+      const retryBtn = document.createElement('button');
+      retryBtn.className = 'retry-btn';
+      retryBtn.textContent = 'Retry';
+      retryBtn.addEventListener('click', () => {
+        this.loadDirectory(this.currentPath);
+      });
+      actions.appendChild(retryBtn);
+
+      const homeLink = document.createElement('a');
+      homeLink.className = 'home-link';
+      homeLink.href = '/files';
+      homeLink.textContent = 'Return to Home';
+      homeLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.navigateToPath('');
+      });
+      actions.appendChild(homeLink);
+
+      banner.appendChild(actions);
+      this.contentContainer.appendChild(banner);
+      return;
+    }
+
+    const fileList = this.registerComponent(
+      new FileListComponent(this.items, this.currentPath, (target) => {
+        this.navigateToPath(target);
+      })
+    );
+    this.contentContainer.appendChild(fileList.render());
+  }
+
+  private navigateToPath(targetPath: string): void {
+    const targetUrl = targetPath ? `/files?path=${encodeURIComponent(targetPath)}` : '/files';
+    if (this.router) {
+      this.router.navigate(targetUrl);
+    } else {
+      window.history.pushState(null, '', targetUrl);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      this.currentPath = targetPath;
+      this.loadDirectory(targetPath);
+    }
+  }
+}

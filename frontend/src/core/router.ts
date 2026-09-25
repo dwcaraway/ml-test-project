@@ -82,7 +82,7 @@ export class Router implements IRouter {
     this.isStarted = true;
 
     this.popstateListener = () => {
-      this.resolve(this.normalizePath(window.location.pathname));
+      this.resolve(this.normalizePath(window.location.pathname + window.location.search));
     };
     window.addEventListener('popstate', this.popstateListener);
 
@@ -93,7 +93,7 @@ export class Router implements IRouter {
     document.addEventListener('click', this.clickListener);
 
     // Initial route resolution
-    this.resolve(this.normalizePath(window.location.pathname));
+    this.resolve(this.normalizePath(window.location.pathname + window.location.search));
   }
 
   stop(): void {
@@ -148,8 +148,22 @@ export class Router implements IRouter {
       return;
     }
 
+    // Do not intercept links with download attribute, non-self target, or external rel
+    if (
+      anchor.hasAttribute('download') ||
+      (anchor.target && anchor.target.toLowerCase() !== '_self') ||
+      anchor.rel?.toLowerCase().includes('external')
+    ) {
+      return;
+    }
+
+    // Do not intercept backend API routes
+    if (targetUrl.pathname.startsWith('/api/') || targetUrl.pathname === '/api') {
+      return;
+    }
+
     event.preventDefault();
-    this.navigate(targetUrl.pathname);
+    this.navigate(targetUrl.pathname + targetUrl.search);
   }
 
   private resolve(path: string): void {
@@ -192,11 +206,22 @@ export class Router implements IRouter {
     }
   }
 
-  private matchRoute(path: string): RouteMatch | null {
+  private matchRoute(fullPath: string): RouteMatch | null {
+    const [pathname, ...searchParts] = fullPath.split('?');
+    const search = searchParts.join('?');
+
     for (const route of this.routes) {
-      const match = route.regex.exec(path);
+      const match = route.regex.exec(pathname);
       if (match) {
         const params: Record<string, string> = {};
+
+        if (search) {
+          const searchParams = new URLSearchParams(search);
+          searchParams.forEach((value, key) => {
+            params[key] = value;
+          });
+        }
+
         for (let i = 0; i < route.paramKeys.length; i++) {
           params[route.paramKeys[i]] = decodeURIComponent(match[i + 1]);
         }
@@ -204,7 +229,7 @@ export class Router implements IRouter {
         return {
           route: route.definition,
           params,
-          path,
+          path: fullPath,
         };
       }
     }
@@ -212,9 +237,9 @@ export class Router implements IRouter {
   }
 
   private normalizePath(path: string): string {
-    if (!path.startsWith('/')) {
-      path = '/' + path;
-    }
-    return path;
+    const [pathname, ...searchParts] = path.split('?');
+    const search = searchParts.length > 0 ? '?' + searchParts.join('?') : '';
+    const normalizedPathname = pathname.startsWith('/') ? pathname : '/' + pathname;
+    return normalizedPathname + search;
   }
 }

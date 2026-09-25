@@ -158,4 +158,36 @@ describe('Router', () => {
     expect(container.innerHTML).toBe('');
     expect(router.getCurrentRoute()).toBeNull();
   });
+
+  it('does not intercept click on links with download attribute or /api routes', () => {
+    router.register({
+      path: '/',
+      viewFactory: () => new MockHomeView(),
+    });
+
+    router.start();
+
+    // 1. Link with download attribute
+    const downloadLink = document.createElement('a');
+    downloadLink.href = '/api/download?path=file.txt';
+    downloadLink.setAttribute('download', 'file.txt');
+    container.appendChild(downloadLink);
+
+    const downloadEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+    downloadLink.dispatchEvent(downloadEvent);
+
+    expect(downloadEvent.defaultPrevented).toBe(false);
+    expect(router.getCurrentRoute()?.route.path).toBe('/');
+
+    // 2. Link targeting /api without download attribute
+    const apiLink = document.createElement('a');
+    apiLink.href = '/api/browse';
+    container.appendChild(apiLink);
+
+    const apiEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+    apiLink.dispatchEvent(apiEvent);
+
+    expect(apiEvent.defaultPrevented).toBe(false);
+    expect(router.getCurrentRoute()?.route.path).toBe('/');
+  });
 });
