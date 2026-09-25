@@ -148,6 +148,20 @@ export class Router implements IRouter {
       return;
     }
 
+    // Do not intercept links with download attribute, non-self target, or external rel
+    if (
+      anchor.hasAttribute('download') ||
+      (anchor.target && anchor.target.toLowerCase() !== '_self') ||
+      anchor.rel?.toLowerCase().includes('external')
+    ) {
+      return;
+    }
+
+    // Do not intercept backend API routes
+    if (targetUrl.pathname.startsWith('/api/') || targetUrl.pathname === '/api') {
+      return;
+    }
+
     event.preventDefault();
     this.navigate(targetUrl.pathname + targetUrl.search);
   }

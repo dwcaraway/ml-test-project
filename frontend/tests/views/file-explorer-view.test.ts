@@ -143,4 +143,36 @@ describe('FileExplorerView Integration', () => {
 
     router?.stop();
   });
+
+  it('allows native file download when clicking download link without router 404 navigation', async () => {
+    vi.spyOn(api, 'fetchBrowseDirectory').mockResolvedValue({
+      currentPath: '',
+      page: 1,
+      pageSize: 50,
+      totalCount: 1,
+      totalPages: 1,
+      items: [{ name: 'sample.txt', size: '100', type: 'file' }],
+    });
+
+    const { initializeApp } = await import('../../src/main');
+    window.history.pushState(null, '', '/files');
+    const router = initializeApp('app');
+
+    await vi.waitFor(() => {
+      expect(container.querySelector('a.download-link')).not.toBeNull();
+    });
+
+    const downloadLink = container.querySelector('a.download-link') as HTMLAnchorElement;
+    const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+    downloadLink.dispatchEvent(clickEvent);
+
+    // The browser download must not be intercepted or prevented by the SPA router
+    expect(clickEvent.defaultPrevented).toBe(false);
+    expect(container.querySelector('.file-explorer-view')).not.toBeNull();
+    expect(container.querySelector('.not-found-view')).toBeNull();
+    expect(container.textContent).not.toContain('404');
+    expect(router?.getCurrentRoute()?.route.path).toBe('/files');
+
+    router?.stop();
+  });
 });
