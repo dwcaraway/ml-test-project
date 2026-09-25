@@ -42,7 +42,8 @@ ml-test-project/
 │   ├── 002-file-browser-api/       # File & Directory Browsing and Download Web API specification
 │   ├── 003-file-explorer-view/     # Frontend File Explorer View & Breadcrumb Navigation specification
 │   ├── 004-item-deletion-and-counts/ # File Explorer Item Counts and Secure Deletion specification
-│   └── 005-file-upload/            # File Upload with Conflict Renaming and Size Limits specification
+│   ├── 005-file-upload/            # File Upload with Conflict Renaming and Size Limits specification
+│   └── 006-file-folder-search/     # Recursive File and Folder Search with Pagination specification
 ├── storage/                        # Server-side home root directory for file browsing & download (sample data)
 ├── seed-storage.ps1                # Generates a local storage tree for API testing
 ├── .github/workflows/              # CI/CD automation workflows
@@ -124,6 +125,7 @@ The backend is built with ASP.NET Core and provides the Web API service as well 
    * **Test API Endpoint:** [`https://localhost:7146/test`](https://localhost:7146/test) &mdash; returns `"API Response"`
    * **File Browser API:** [`https://localhost:7146/api/browse`](https://localhost:7146/api/browse) &mdash; paginated directory listings
    * **File Download API:** [`https://localhost:7146/api/download?path={path}`](https://localhost:7146/api/download) &mdash; streaming file downloads
+   * **Search API:** [`https://localhost:7146/api/search?query={term}`](https://localhost:7146/api/search) &mdash; recursive file and folder search
    * **Frontend Entry:** [`https://localhost:7146/index.html`](https://localhost:7146/index.html) &mdash; serves static files or built SPA assets from `backend/wwwroot`
 
 ---
@@ -248,6 +250,46 @@ Uploads a file via `multipart/form-data` to the designated directory path within
   * `400 Bad Request`: Missing file payload, file size strictly exceeds the 8 MB limit, or path traversal attempt (`../`, `..\\`).
   * `404 Not Found`: Target destination directory does not exist.
 
+##### 5. Search Files & Folders (`GET /api/search`)
+
+Recursively searches files and folders matching a partial name substring, beginning at the specified path and traversing all descendant subdirectories. Results are sorted by type (all folders precede all files, with alphabetical sorting within each type) and support pagination.
+
+* **Query Parameters:**
+  * `path` (*optional*, default: `""`): Relative directory path within the storage root where recursive search begins.
+  * `query` (*required*): Substring to match against file and folder names (case-insensitive, item names only).
+  * `page` (*optional*, default: `1`): 1-based page number (clamped to `>= 1`).
+  * `pageSize` (*optional*, default: `50`): Maximum items per page (clamped between `1` and `100`).
+
+* **Response (`200 OK`):**
+  ```json
+  {
+    "basePath": "docs",
+    "query": "report",
+    "page": 1,
+    "pageSize": 50,
+    "totalCount": 2,
+    "totalPages": 1,
+    "items": [
+      {
+        "name": "annual-reports",
+        "path": "docs/annual-reports",
+        "size": "-",
+        "type": "folder"
+      },
+      {
+        "name": "quarterly-report.pdf",
+        "path": "docs/annual-reports/quarterly-report.pdf",
+        "size": "1048576",
+        "type": "file"
+      }
+    ]
+  }
+  ```
+
+* **Error Responses:**
+  * `400 Bad Request`: Empty or missing search query, or path traversal attempt (`../`, `..\\`).
+  * `404 Not Found`: Target starting directory does not exist.
+
 #### Security & Path Traversal Prevention
 
 All incoming paths are canonicalized and strictly verified against the storage root directory. Any attempt to navigate outside the home directory via `../`, `..\\`, absolute paths, or prefix collision attempts is blocked with `400 Bad Request`.
@@ -310,6 +352,9 @@ The frontend includes a responsive, zero-framework File Explorer view accessible
 * **Item Counts Summary Footer**: Prominently displays the total count of folders and non-folder files on the current directory results at the bottom of the table (`Folders: X | Files: Y`), automatically recalculating when items are removed or added.
 * **Safe Item Deletion with Confirmation**: Both files and folders provide an accessible **Delete** action in the Actions column. Clicking Delete presents a browser confirmation prompt (`window.confirm`) identifying the item name and explicitly warning that the action is permanent and unrecoverable. Upon confirmation, the deletion request is dispatched to `DELETE /api/delete`, removing the item from the view and decrementing counters immediately without requiring a full page refresh.
 * **Native File Upload with Conflict Handling**: An **Upload** button is placed above and to the right of the File Explorer view. Selecting it opens the native OS file picker to upload files directly into the active viewing directory. File size is enforced up to 8 MB with immediate client-side and server-side validation. Existing files are protected from accidental overwrite through automatic numeric copy postfixing (`_copy1`, `_copy2`, etc.), immediately updating the item list and incrementing the footer file counter.
+* **Recursive File & Folder Search**: In browsing mode, a search box sits immediately to the left of the Upload link. Submitting a query recursively searches the active directory and all descendant folders for matching names. In search mode, the search box sits above the results table, the Upload button is hidden, and matching files and folders display their name, type, and size (`"-"` for folders, byte count for files). Selecting any folder from search results transitions the view directly to browse mode displaying that folder's contents and restores the upload button.
+* **Search Results Pagination**: When search results span multiple pages, numbered pagination options (`1 .. N`) render at the bottom of the explorer view with the currently selected page visually indicated. Clicking any page number navigates directly to that page of results.
+* **Global Operation Loading Spinner**: A visible spinning indicator icon appears during active asynchronous `search`, `delete`, or `upload` operations before receiving a response, assuring the user that the operation is processing. The spinner is automatically hidden once the operation completes or when idle.
 * **Dynamic Breadcrumb Navigation**:
   * Hidden when viewing the root storage directory.
   * When viewing subdirectories, displays a hierarchical path starting with `Home` (`Home > docs`).

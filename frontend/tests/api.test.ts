@@ -274,3 +274,80 @@ describe('uploadFile', () => {
   });
 });
 
+describe('searchFiles', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('throws error immediately if query is empty or whitespace without calling fetch', async () => {
+    global.fetch = vi.fn();
+    const { searchFiles } = await import('../src/api');
+
+    await expect(searchFiles('docs', '')).rejects.toThrow('Search query cannot be empty.');
+    await expect(searchFiles('docs', '   ')).rejects.toThrow('Search query cannot be empty.');
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('constructs correct search URL with query parameters and returns parsed response', async () => {
+    const mockResponse = {
+      basePath: 'docs',
+      query: 'annual',
+      page: 1,
+      pageSize: 50,
+      totalCount: 1,
+      totalPages: 1,
+      items: [
+        {
+          name: 'annual_report.pdf',
+          path: 'docs/annual_report.pdf',
+          size: '1024',
+          type: 'file',
+        },
+      ],
+    };
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    });
+
+    const { searchFiles } = await import('../src/api');
+    const result = await searchFiles('docs', 'annual', 1, 50);
+
+    expect(result).toEqual(mockResponse);
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/search?path=docs&query=annual&page=1&pageSize=50'
+    );
+  });
+
+  it('throws error with server message when response is not ok', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: 'Invalid path or path traversal detected.' }),
+    });
+
+    const { searchFiles } = await import('../src/api');
+    await expect(searchFiles('../outside', 'test')).rejects.toThrow(
+      'Invalid path or path traversal detected.'
+    );
+  });
+
+  it('throws HTTP status error fallback when error response is not JSON', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => {
+        throw new Error('Not JSON');
+      },
+    });
+
+    const { searchFiles } = await import('../src/api');
+    await expect(searchFiles('docs', 'test')).rejects.toThrow('HTTP error! status: 500');
+  });
+});
