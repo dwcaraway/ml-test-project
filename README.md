@@ -43,6 +43,7 @@ ml-test-project/
 │   ├── 003-file-explorer-view/     # Frontend File Explorer View & Breadcrumb Navigation specification
 │   └── 004-item-deletion-and-counts/ # File Explorer Item Counts and Secure Deletion specification
 ├── storage/                        # Server-side home root directory for file browsing & download (sample data)
+├── seed-storage.ps1                # Generates a local storage tree for API testing
 ├── .github/workflows/              # CI/CD automation workflows
 ├── .specify/                       # Spec Kit project metadata & constitution
 ├── AGENTS.md                       # Repo guidance and conventions
@@ -62,6 +63,28 @@ Verify your installation:
 dotnet --version
 node --version
 ```
+
+---
+
+## Local Storage Seed Data for Testing
+
+The project includes a root-level PowerShell helper, `seed-storage.ps1`, that creates a realistic local storage tree under the repository's `storage/` folder for browser and download testing.
+
+Run it from the project root:
+
+```powershell
+./seed-storage.ps1
+```
+
+This script will:
+
+* remove and recreate the `storage/` directory so the tree is deterministic
+* create between 25 and 100 files at the root level
+* create between 5 and 10 folders at the root level
+* recurse through child folders and generate additional files/folders up to 5 levels deep
+* create a mix of nested directories and sample text files for the file browser API to browse
+
+This is useful when you want to exercise paging, nested directory traversal, sorting, and download behavior without manually creating test data.
 
 ---
 
