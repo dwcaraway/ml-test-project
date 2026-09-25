@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using TestProject.Models;
 
 namespace TestProject.Services
@@ -9,6 +10,8 @@ namespace TestProject.Services
         FileDownloadInfo GetFileForDownload(string? relativePath);
 
         void DeleteItem(string? relativePath);
+
+        Task<UploadResultDto> UploadFileAsync(string? targetDirectory, IFormFile file, CancellationToken cancellationToken = default);
 
         string ResolveAndValidatePath(string? relativePath, bool mustBeDirectory = false);
     }

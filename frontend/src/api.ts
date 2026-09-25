@@ -69,3 +69,44 @@ export async function deleteItem(
   return (await response.json()) as DeleteResponse;
 }
 
+export interface UploadResponse {
+  fileName: string;
+  path: string;
+  sizeBytes: number;
+  message: string;
+}
+
+export async function uploadFile(
+  path: string,
+  file: File,
+  baseUrl: string = ''
+): Promise<UploadResponse> {
+  if (file.size > 8 * 1024 * 1024) {
+    throw new Error('File exceeds the maximum allowed size of 8 MB.');
+  }
+
+  const queryParam = path ? `?path=${encodeURIComponent(path)}` : '';
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${baseUrl}/api/upload${queryParam}`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let errorMessage = `HTTP error! status: ${response.status}`;
+    try {
+      const errorData = await response.json();
+      if (errorData && typeof errorData.error === 'string') {
+        errorMessage = errorData.error;
+      }
+    } catch {
+      // Fallback to HTTP error status
+    }
+    throw new Error(errorMessage);
+  }
+
+  return (await response.json()) as UploadResponse;
+}
+

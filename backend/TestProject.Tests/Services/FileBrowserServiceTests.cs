@@ -1,4 +1,7 @@
+using System.IO;
 using System.Security;
+using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using TestProject.Configuration;
 using TestProject.Models;
@@ -223,6 +226,118 @@ namespace TestProject.Tests.Services
         public void DeleteItem_NonExistentItem_ThrowsFileNotFoundException()
         {
             Assert.Throws<FileNotFoundException>(() => _service.DeleteItem("non-existent.txt"));
+        }
+
+        private static IFormFile CreateFormFile(string fileName, string content = "test content")
+        {
+            var bytes = Encoding.UTF8.GetBytes(content);
+            var stream = new MemoryStream(bytes);
+            return new FormFile(stream, 0, bytes.Length, "file", fileName);
+        }
+
+        private static IFormFile CreateLargeFormFile(string fileName, long byteCount)
+        {
+            var stream = new MemoryStream();
+            stream.SetLength(byteCount);
+            return new FormFile(stream, 0, byteCount, "file", fileName);
+        }
+
+        [Fact]
+        public async Task UploadFileAsync_ValidFileInRoot_SavesFileSuccessfully()
+        {
+            var file = CreateFormFile("newfile.txt", "fresh content");
+
+            var result = await _service.UploadFileAsync("", file);
+
+            Assert.NotNull(result);
+            Assert.Equal("newfile.txt", result.FileName);
+            Assert.Equal("", result.Path);
+            Assert.True(File.Exists(Path.Combine(_testRoot, "newfile.txt")));
+            Assert.Equal("fresh content", File.ReadAllText(Path.Combine(_testRoot, "newfile.txt")));
+        }
+
+        [Fact]
+        public async Task UploadFileAsync_ValidFileInSubfolder_SavesFileInSubfolder()
+        {
+            var file = CreateFormFile("nested.txt", "nested content");
+
+            var result = await _service.UploadFileAsync("docs", file);
+
+            Assert.NotNull(result);
+            Assert.Equal("nested.txt", result.FileName);
+            Assert.Equal("docs", result.Path);
+            Assert.True(File.Exists(Path.Combine(_testRoot, "docs", "nested.txt")));
+            Assert.Equal("nested content", File.ReadAllText(Path.Combine(_testRoot, "docs", "nested.txt")));
+        }
+
+        [Fact]
+        public async Task UploadFileAsync_Conflict_AppendsCopy1()
+        {
+            var file = CreateFormFile("sample.txt", "replacement content");
+
+            var result = await _service.UploadFileAsync("", file);
+
+            Assert.NotNull(result);
+            Assert.Equal("sample_copy1.txt", result.FileName);
+            Assert.Equal("sample file content", File.ReadAllText(Path.Combine(_testRoot, "sample.txt")));
+            Assert.True(File.Exists(Path.Combine(_testRoot, "sample_copy1.txt")));
+            Assert.Equal("replacement content", File.ReadAllText(Path.Combine(_testRoot, "sample_copy1.txt")));
+        }
+
+        [Fact]
+        public async Task UploadFileAsync_SequentialConflict_AppendsCopy2()
+        {
+            File.WriteAllText(Path.Combine(_testRoot, "sample_copy1.txt"), "copy1 content");
+            var file = CreateFormFile("sample.txt", "copy2 content");
+
+            var result = await _service.UploadFileAsync("", file);
+
+            Assert.NotNull(result);
+            Assert.Equal("sample_copy2.txt", result.FileName);
+            Assert.True(File.Exists(Path.Combine(_testRoot, "sample_copy2.txt")));
+            Assert.Equal("copy2 content", File.ReadAllText(Path.Combine(_testRoot, "sample_copy2.txt")));
+        }
+
+        [Fact]
+        public async Task UploadFileAsync_ExtensionlessFileConflict_AppendsCopy1()
+        {
+            File.WriteAllText(Path.Combine(_testRoot, "LICENSE"), "license original");
+            var file = CreateFormFile("LICENSE", "license new");
+
+            var result = await _service.UploadFileAsync("", file);
+
+            Assert.NotNull(result);
+            Assert.Equal("LICENSE_copy1", result.FileName);
+            Assert.True(File.Exists(Path.Combine(_testRoot, "LICENSE_copy1")));
+        }
+
+        [Fact]
+        public async Task UploadFileAsync_FileSizeExceeds8MB_ThrowsArgumentException()
+        {
+            var file = CreateLargeFormFile("toolarge.bin", 8 * 1024 * 1024 + 1);
+
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _service.UploadFileAsync("", file));
+            Assert.Contains("8 MB", ex.Message);
+        }
+
+        [Theory]
+        [InlineData("../")]
+        [InlineData("..\\")]
+        [InlineData("../../etc/passwd")]
+        [InlineData("docs/../../../escaped")]
+        public async Task UploadFileAsync_PathTraversal_ThrowsSecurityException(string maliciousPath)
+        {
+            var file = CreateFormFile("test.txt");
+
+            await Assert.ThrowsAsync<SecurityException>(() => _service.UploadFileAsync(maliciousPath, file));
+        }
+
+        [Fact]
+        public async Task UploadFileAsync_NonExistentDestination_ThrowsDirectoryNotFoundException()
+        {
+            var file = CreateFormFile("test.txt");
+
+            await Assert.ThrowsAsync<DirectoryNotFoundException>(() => _service.UploadFileAsync("non_existent_dir", file));
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Security;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 using TestProject.Configuration;
@@ -224,6 +225,79 @@ namespace TestProject.Services
             }
 
             throw new FileNotFoundException("Item not found.");
+        }
+
+        public async Task<UploadResultDto> UploadFileAsync(string? targetDirectory, IFormFile file, CancellationToken cancellationToken = default)
+        {
+            if (file == null || file.Length == 0)
+            {
+                throw new ArgumentException("A file must be provided for upload.");
+            }
+
+            const long maxSizeBytes = 8 * 1024 * 1024; // 8 MB
+            if (file.Length > maxSizeBytes)
+            {
+                throw new ArgumentException("File exceeds the maximum allowed size of 8 MB.");
+            }
+
+            // Resolve destination directory and validate against boundary
+            var canonicalTargetDir = ResolveAndValidatePath(targetDirectory, mustBeDirectory: true);
+
+            var originalFileName = Path.GetFileName(file.FileName);
+            if (string.IsNullOrWhiteSpace(originalFileName))
+            {
+                originalFileName = "unnamed_file";
+            }
+
+            // Extract base name and extension
+            var extension = Path.GetExtension(originalFileName);
+            var baseName = Path.GetFileNameWithoutExtension(originalFileName);
+
+            var chosenFileName = originalFileName;
+            var targetFilePath = Path.Combine(canonicalTargetDir, chosenFileName);
+
+            if (File.Exists(targetFilePath) || Directory.Exists(targetFilePath))
+            {
+                var copyIndex = 1;
+                while (true)
+                {
+                    chosenFileName = $"{baseName}_copy{copyIndex}{extension}";
+                    targetFilePath = Path.Combine(canonicalTargetDir, chosenFileName);
+                    if (!File.Exists(targetFilePath) && !Directory.Exists(targetFilePath))
+                    {
+                        break;
+                    }
+                    copyIndex++;
+                }
+            }
+
+            using (var fileStream = new FileStream(targetFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                await file.CopyToAsync(fileStream, cancellationToken);
+            }
+
+            // Calculate relative path for response
+            var canonicalRoot = _options.GetCanonicalRootPath()
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string relativePath;
+            if (canonicalTargetDir.Equals(canonicalRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                relativePath = string.Empty;
+            }
+            else
+            {
+                relativePath = canonicalTargetDir.Substring(canonicalRoot.Length)
+                    .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                relativePath = NormalizeSeparators(relativePath);
+            }
+
+            return new UploadResultDto
+            {
+                FileName = chosenFileName,
+                Path = relativePath,
+                SizeBytes = file.Length,
+                Message = "File uploaded successfully."
+            };
         }
     }
 }

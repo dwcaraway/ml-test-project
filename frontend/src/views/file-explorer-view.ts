@@ -3,7 +3,7 @@ import { IRouter } from '../core/types';
 import { NavbarComponent } from '../components/navbar';
 import { BreadcrumbComponent } from '../components/breadcrumb';
 import { FileListComponent } from '../components/file-list';
-import { fetchBrowseDirectory, deleteItem, FileSystemItem } from '../api';
+import { fetchBrowseDirectory, deleteItem, uploadFile, FileSystemItem } from '../api';
 
 export class FileExplorerView extends BaseView {
   readonly name = 'FileExplorerView';
@@ -13,6 +13,8 @@ export class FileExplorerView extends BaseView {
   private isLoading = false;
   private errorMessage: string | null = null;
   private deletionError: string | null = null;
+  private uploadError: string | null = null;
+  private fileInput: HTMLInputElement | null = null;
   private contentContainer: HTMLElement | null = null;
   private breadcrumbContainer: HTMLElement | null = null;
   private router?: IRouter;
@@ -41,10 +43,40 @@ export class FileExplorerView extends BaseView {
     // 2. View Header
     const header = document.createElement('header');
     header.className = 'explorer-header';
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+
     const title = document.createElement('h2');
     title.textContent = 'Files';
     header.appendChild(title);
+
+    const headerActions = document.createElement('div');
+    headerActions.className = 'header-actions';
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.type = 'button';
+    uploadBtn.className = 'upload-btn';
+    uploadBtn.id = 'upload-file-button';
+    uploadBtn.textContent = 'Upload';
+    uploadBtn.addEventListener('click', () => {
+      this.fileInput?.click();
+    });
+    headerActions.appendChild(uploadBtn);
+    header.appendChild(headerActions);
+
     wrapper.appendChild(header);
+
+    // Hidden file input for native OS file selection
+    this.fileInput = document.createElement('input');
+    this.fileInput.type = 'file';
+    this.fileInput.className = 'file-upload-input';
+    this.fileInput.style.display = 'none';
+    this.fileInput.setAttribute('aria-hidden', 'true');
+    this.fileInput.addEventListener('change', () => {
+      this.handleFileSelected();
+    });
+    wrapper.appendChild(this.fileInput);
 
     // 3. Breadcrumb Container (filled when not root)
     this.breadcrumbContainer = document.createElement('div');
@@ -66,6 +98,7 @@ export class FileExplorerView extends BaseView {
     this.isLoading = true;
     this.errorMessage = null;
     this.deletionError = null;
+    this.uploadError = null;
     this.renderContent();
 
     try {
@@ -170,6 +203,19 @@ export class FileExplorerView extends BaseView {
       this.contentContainer.appendChild(banner);
     }
 
+    if (this.uploadError) {
+      const banner = document.createElement('div');
+      banner.className = 'error-banner upload-error';
+      banner.setAttribute('role', 'alert');
+
+      const msg = document.createElement('p');
+      msg.className = 'error-message';
+      msg.textContent = this.uploadError;
+      banner.appendChild(msg);
+
+      this.contentContainer.appendChild(banner);
+    }
+
     const fileList = this.registerComponent(
       new FileListComponent(
         this.items,
@@ -212,6 +258,50 @@ export class FileExplorerView extends BaseView {
       this.renderContent();
     } catch (err: unknown) {
       this.deletionError = err instanceof Error ? err.message : 'Failed to delete item.';
+      this.renderContent();
+    }
+  }
+
+  private async handleFileSelected(): Promise<void> {
+    const file = this.fileInput?.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    // Client-side size pre-validation (strictly > 8 MB)
+    if (file.size > 8 * 1024 * 1024) {
+      this.uploadError = 'File exceeds the maximum allowed size of 8 MB.';
+      if (this.fileInput) {
+        this.fileInput.value = '';
+      }
+      this.renderContent();
+      return;
+    }
+
+    try {
+      this.uploadError = null;
+      const response = await uploadFile(this.currentPath, file);
+      const newItem: FileSystemItem = {
+        name: response.fileName,
+        size: response.sizeBytes.toString(),
+        type: 'file',
+      };
+      this.items.push(newItem);
+      this.items.sort((a, b) => {
+        if (a.type !== b.type) {
+          return a.type === 'folder' ? -1 : 1;
+        }
+        return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+      });
+      if (this.fileInput) {
+        this.fileInput.value = '';
+      }
+      this.renderContent();
+    } catch (err: unknown) {
+      this.uploadError = err instanceof Error ? err.message : 'Failed to upload file.';
+      if (this.fileInput) {
+        this.fileInput.value = '';
+      }
       this.renderContent();
     }
   }

@@ -10,8 +10,8 @@
 
 **Purpose**: API client contracts, data models, and shared client/server infrastructure.
 
-- [ ] T001 [P] Define `UploadResponse` interface and implement `uploadFile` API client function in `frontend/src/api.ts`
-- [ ] T002 [P] Create `UploadResultDto.cs` model in `backend/Models/UploadResultDto.cs` with `FileName`, `Path`, `SizeBytes`, and `Message` properties
+- [X] T001 [P] Define `UploadResponse` interface and implement `uploadFile` API client function in `frontend/src/api.ts`
+- [X] T002 [P] Create `UploadResultDto.cs` model in `backend/Models/UploadResultDto.cs` with `FileName`, `Path`, `SizeBytes`, and `Message` properties
 
 ---
 
@@ -21,7 +21,7 @@
 
 **⚠️ CRITICAL**: Must complete before User Story 1 server implementation.
 
-- [ ] T003 [P] Add `UploadFileAsync` method signature to `IFileBrowserService` in `backend/Services/IFileBrowserService.cs`
+- [X] T003 [P] Add `UploadFileAsync` method signature to `IFileBrowserService` in `backend/Services/IFileBrowserService.cs`
 
 **Checkpoint**: Foundational interface ready — user stories can proceed.
 
@@ -37,13 +37,13 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T004 [P] [US1] Write unit tests in `backend/TestProject.Tests/Services/FileBrowserServiceTests.cs` verifying `UploadFileAsync` destination path traversal validation, missing folder check, max 8 MB size check, and sequential `_copyN` conflict renaming
-- [ ] T005 [P] [US1] Write integration tests in `backend/TestProject.Tests/Integration/UploadEndpointTests.cs` verifying `POST /api/upload` endpoint status codes (`200 OK`, `400 Bad Request`, `404 Not Found`) and multipart upload handling
+- [X] T004 [P] [US1] Write unit tests in `backend/TestProject.Tests/Services/FileBrowserServiceTests.cs` verifying `UploadFileAsync` destination path traversal validation, missing folder check, max 8 MB size check, and sequential `_copyN` conflict renaming
+- [X] T005 [P] [US1] Write integration tests in `backend/TestProject.Tests/Integration/UploadEndpointTests.cs` verifying `POST /api/upload` endpoint status codes (`200 OK`, `400 Bad Request`, `404 Not Found`) and multipart upload handling
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Implement `UploadFileAsync` in `backend/Services/FileBrowserService.cs` with path resolution, 8 MB limit validation (`file.Length <= 8 * 1024 * 1024`), collision detection loop (`_copy1`, `_copy2`, etc.), and file stream writing
-- [ ] T007 [US1] Implement `Upload` endpoint in `backend/Controllers/FileBrowserController.cs` mapping `POST /api/upload` to `_fileBrowserService.UploadFileAsync` with structured exception handling (`SecurityException`/`ArgumentException` to 400, `DirectoryNotFoundException` to 404)
+- [X] T006 [US1] Implement `UploadFileAsync` in `backend/Services/FileBrowserService.cs` with path resolution, 8 MB limit validation (`file.Length <= 8 * 1024 * 1024`), collision detection loop (`_copy1`, `_copy2`, etc.), and file stream writing
+- [X] T007 [US1] Implement `Upload` endpoint in `backend/Controllers/FileBrowserController.cs` mapping `POST /api/upload` to `_fileBrowserService.UploadFileAsync` with structured exception handling (`SecurityException`/`ArgumentException` to 400, `DirectoryNotFoundException` to 404)
 
 **Checkpoint**: User Story 1 fully functional and independently testable as the core upload & conflict resolution MVP.
 
@@ -59,12 +59,12 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T008 [P] [US2] Write unit tests in `frontend/tests/api.test.ts` verifying `uploadFile` FormData construction, query parameter encoding, and error response handling
-- [ ] T009 [P] [US2] Write integration tests in `frontend/tests/views/file-explorer-upload.test.ts` verifying presence of `.upload-btn` in `.explorer-header`, programmatic triggering of the file input, upload dispatch to current directory, table row addition, and footer file count increment
+- [X] T008 [P] [US2] Write unit tests in `frontend/tests/api.test.ts` verifying `uploadFile` FormData construction, query parameter encoding, and error response handling
+- [X] T009 [P] [US2] Write integration tests in `frontend/tests/views/file-explorer-upload.test.ts` verifying presence of `.upload-btn` in `.explorer-header`, programmatic triggering of the file input, upload dispatch to current directory, table row addition, and footer file count increment
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Update `FileExplorerView` in `frontend/src/views/file-explorer-view.ts` to add the `.upload-btn` to the explorer header, append hidden file input, trigger file dialog, and handle successful upload by updating `items` and re-rendering content and footer counts
+- [X] T010 [US2] Update `FileExplorerView` in `frontend/src/views/file-explorer-view.ts` to add the `.upload-btn` to the explorer header, append hidden file input, trigger file dialog, and handle successful upload by updating `items` and re-rendering content and footer counts
 
 **Checkpoint**: User Stories 1 and 2 work together. Users can upload files via the browser UI and see immediate list/count updates.
 
@@ -80,12 +80,12 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T011 [P] [US3] Add tests in `frontend/tests/api.test.ts` verifying `uploadFile` client-side size pre-validation throws when file size strictly exceeds 8 MB (8,388,608 bytes)
-- [ ] T012 [P] [US3] Add integration tests in `frontend/tests/views/file-explorer-upload.test.ts` verifying client-side >8 MB rejection banner, server failure error banner, and conflict-renamed item rendering
+- [X] T011 [P] [US3] Add tests in `frontend/tests/api.test.ts` verifying `uploadFile` client-side size pre-validation throws when file size strictly exceeds 8 MB (8,388,608 bytes)
+- [X] T012 [P] [US3] Add integration tests in `frontend/tests/views/file-explorer-upload.test.ts` verifying client-side >8 MB rejection banner, server failure error banner, and conflict-renamed item rendering
 
 ### Implementation for User Story 3
 
-- [ ] T013 [US3] Implement client-side size pre-validation check and error banner display (`.error-banner.upload-error`) in `FileExplorerView` in `frontend/src/views/file-explorer-view.ts`
+- [X] T013 [US3] Implement client-side size pre-validation check and error banner display (`.error-banner.upload-error`) in `FileExplorerView` in `frontend/src/views/file-explorer-view.ts`
 
 **Checkpoint**: All user stories fully implemented. Users receive instant size validation, clear failure feedback, and transparent collision renaming.
 
@@ -95,12 +95,12 @@
 
 **Purpose**: Verification, linting, formatting, documentation, and end-to-end quickstart execution.
 
-- [ ] T014 [P] Run full frontend test suite via `npm test` in `frontend/` to ensure zero regressions across all component and view tests
-- [ ] T015 [P] Verify TypeScript static type checking passes cleanly via `npm run typecheck` in `frontend/`
-- [ ] T016 [P] Run full backend test suite via `dotnet test` in `backend/` to ensure zero regressions
-- [ ] T017 [P] Run production build via `npm run build` in `frontend/` and restore `backend/wwwroot/.gitkeep`
-- [ ] T018 Execute full validation workflow following `specs/005-file-upload/quickstart.md`
-- [ ] T019 [P] Update project documentation in `README.md` to document the `POST /api/upload` endpoint, 8 MB limit, `_copyN` conflict renaming, and upload UI feature per Constitution Principle VIII
+- [X] T014 [P] Run full frontend test suite via `npm test` in `frontend/` to ensure zero regressions across all component and view tests
+- [X] T015 [P] Verify TypeScript static type checking passes cleanly via `npm run typecheck` in `frontend/`
+- [X] T016 [P] Run full backend test suite via `dotnet test` in `backend/` to ensure zero regressions
+- [X] T017 [P] Run production build via `npm run build` in `frontend/` and restore `backend/wwwroot/.gitkeep`
+- [X] T018 Execute full validation workflow following `specs/005-file-upload/quickstart.md`
+- [X] T019 [P] Update project documentation in `README.md` to document the `POST /api/upload` endpoint, 8 MB limit, `_copyN` conflict renaming, and upload UI feature per Constitution Principle VIII
 
 ---
 
