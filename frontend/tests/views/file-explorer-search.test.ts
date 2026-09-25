@@ -230,4 +230,127 @@ describe('FileExplorerView Search Integration', () => {
       expect(searchMock).toHaveBeenCalledWith('', 'data', 2, 50);
     });
   });
+
+  it('does not display pagination when there is only 1 page of results', async () => {
+    vi.spyOn(api, 'fetchBrowseDirectory').mockResolvedValue({
+      currentPath: '',
+      page: 1,
+      pageSize: 50,
+      totalCount: 0,
+      totalPages: 0,
+      items: [],
+    });
+
+    vi.spyOn(api, 'searchFiles').mockResolvedValue({
+      basePath: '',
+      query: 'singlepage',
+      page: 1,
+      pageSize: 50,
+      totalCount: 5,
+      totalPages: 1,
+      items: [
+        { name: 'file1.txt', path: 'file1.txt', size: '10', type: 'file' },
+      ],
+    });
+
+    view.mount(container, { path: '' });
+
+    await vi.waitFor(() => {
+      expect(container.querySelector('#search-input')).not.toBeNull();
+    });
+
+    const input = container.querySelector('#search-input') as HTMLInputElement;
+    const form = container.querySelector('#explorer-search-form') as HTMLFormElement;
+
+    input.value = 'singlepage';
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+
+    await vi.waitFor(() => {
+      expect(container.querySelector('.search-results-banner')).not.toBeNull();
+    });
+
+    // Pagination must NOT be displayed when totalPages === 1
+    const pagination = container.querySelector('#search-pagination');
+    expect(pagination).toBeNull();
+  });
+
+  it('follows Google pagination UX pattern with Prev/Next and truncated page numbers when there are more than 10 pages', async () => {
+    vi.spyOn(api, 'fetchBrowseDirectory').mockResolvedValue({
+      currentPath: '',
+      page: 1,
+      pageSize: 50,
+      totalCount: 0,
+      totalPages: 0,
+      items: [],
+    });
+
+    const searchMock = vi.spyOn(api, 'searchFiles').mockResolvedValue({
+      basePath: '',
+      query: 'many',
+      page: 1,
+      pageSize: 10,
+      totalCount: 250,
+      totalPages: 25,
+      items: [
+        { name: 'item1.txt', path: 'item1.txt', size: '10', type: 'file' },
+      ],
+    });
+
+    view.mount(container, { path: '' });
+
+    await vi.waitFor(() => {
+      expect(container.querySelector('#search-input')).not.toBeNull();
+    });
+
+    const input = container.querySelector('#search-input') as HTMLInputElement;
+    const form = container.querySelector('#explorer-search-form') as HTMLFormElement;
+
+    input.value = 'many';
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+
+    await vi.waitFor(() => {
+      expect(container.querySelector('#search-pagination')).not.toBeNull();
+    });
+
+    const pagination = container.querySelector('#search-pagination') as HTMLElement;
+    expect(pagination).not.toBeNull();
+
+    // Previous and Next buttons must exist
+    const prevBtn = pagination.querySelector('.prev-page-btn') as HTMLButtonElement;
+    const nextBtn = pagination.querySelector('.next-page-btn') as HTMLButtonElement;
+    expect(prevBtn).not.toBeNull();
+    expect(nextBtn).not.toBeNull();
+
+    // On page 1, Previous is disabled and Next is enabled
+    expect(prevBtn.disabled).toBe(true);
+    expect(nextBtn.disabled).toBe(false);
+
+    // Number of page buttons should NOT be all 25 (must be truncated to avoid going off screen)
+    const pageButtons = pagination.querySelectorAll('.page-btn');
+    expect(pageButtons.length).toBeLessThan(10);
+
+    // Ellipsis should be displayed
+    const ellipsis = pagination.querySelectorAll('.pagination-ellipsis');
+    expect(ellipsis.length).toBeGreaterThanOrEqual(1);
+
+    // Click Next button -> advances to page 2
+    searchMock.mockResolvedValueOnce({
+      basePath: '',
+      query: 'many',
+      page: 2,
+      pageSize: 10,
+      totalCount: 250,
+      totalPages: 25,
+      items: [
+        { name: 'item11.txt', path: 'item11.txt', size: '10', type: 'file' },
+      ],
+    });
+
+    nextBtn.click();
+
+    await vi.waitFor(() => {
+      expect(searchMock).toHaveBeenCalledWith('', 'many', 2, 50);
+    });
+  });
 });
+

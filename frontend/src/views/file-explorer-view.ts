@@ -88,6 +88,8 @@ export class FileExplorerView extends BaseView {
         .spinner-icon.hidden {
           display: none !important;
         }
+        .pagination-nav .prev-page-btn,
+        .pagination-nav .next-page-btn,
         .pagination-nav .page-btn {
           padding: 4px 10px;
           cursor: pointer;
@@ -96,11 +98,21 @@ export class FileExplorerView extends BaseView {
           background: #ffffff;
           color: #24292f;
         }
+        .pagination-nav .prev-page-btn:disabled,
+        .pagination-nav .next-page-btn:disabled {
+          cursor: not-allowed;
+          opacity: 0.5;
+        }
         .pagination-nav .page-btn.active {
           font-weight: bold;
           background-color: #0969da;
           color: #ffffff;
           border-color: #0969da;
+        }
+        .pagination-nav .pagination-ellipsis {
+          padding: 0 4px;
+          color: #57606a;
+          user-select: none;
         }
       `;
       document.head.appendChild(style);
@@ -497,31 +509,102 @@ export class FileExplorerView extends BaseView {
       this.contentContainer.appendChild(footer);
     }
 
-    // In search mode, render numbered pagination options (1 .. N) at the bottom
-    if (this.viewMode === 'searching' && this.searchTotalPages >= 1) {
+    // In search mode, render numbered pagination options with Prev/Next and truncation
+    // Do not display pagination if there is only 1 page of results
+    if (this.viewMode === 'searching' && this.searchTotalPages > 1) {
       const paginationNav = document.createElement('nav');
       paginationNav.id = 'search-pagination';
       paginationNav.className = 'pagination-nav';
       paginationNav.setAttribute('aria-label', 'Search results pagination');
       paginationNav.style.display = 'flex';
       paginationNav.style.justifyContent = 'center';
+      paginationNav.style.alignItems = 'center';
       paginationNav.style.gap = '6px';
       paginationNav.style.marginTop = '16px';
 
-      for (let p = 1; p <= this.searchTotalPages; p++) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'page-btn' + (p === this.searchPage ? ' active' : '');
-        btn.setAttribute('data-page', p.toString());
-        if (p === this.searchPage) {
-          btn.setAttribute('aria-current', 'page');
+      // Previous button
+      const prevBtn = document.createElement('button');
+      prevBtn.type = 'button';
+      prevBtn.className = 'prev-page-btn';
+      prevBtn.setAttribute('aria-label', 'Previous page');
+      prevBtn.textContent = 'Previous';
+      prevBtn.disabled = this.searchPage <= 1;
+      prevBtn.addEventListener('click', () => {
+        if (this.searchPage > 1) {
+          this.executeSearch(this.searchQuery, this.searchPage - 1);
         }
-        btn.textContent = p.toString();
-        btn.addEventListener('click', () => {
-          this.executeSearch(this.searchQuery, p);
-        });
-        paginationNav.appendChild(btn);
+      });
+      paginationNav.appendChild(prevBtn);
+
+      // Truncated page number buttons following Google pagination UX pattern
+      const total = this.searchTotalPages;
+      const current = this.searchPage;
+      const pageItems: (number | 'ellipsis')[] = [];
+
+      if (total <= 7) {
+        for (let p = 1; p <= total; p++) {
+          pageItems.push(p);
+        }
+      } else {
+        if (current <= 4) {
+          for (let p = 1; p <= 5; p++) {
+            pageItems.push(p);
+          }
+          pageItems.push('ellipsis');
+          pageItems.push(total);
+        } else if (current >= total - 3) {
+          pageItems.push(1);
+          pageItems.push('ellipsis');
+          for (let p = total - 4; p <= total; p++) {
+            pageItems.push(p);
+          }
+        } else {
+          pageItems.push(1);
+          pageItems.push('ellipsis');
+          pageItems.push(current - 1);
+          pageItems.push(current);
+          pageItems.push(current + 1);
+          pageItems.push('ellipsis');
+          pageItems.push(total);
+        }
       }
+
+      for (const item of pageItems) {
+        if (item === 'ellipsis') {
+          const ellipsisSpan = document.createElement('span');
+          ellipsisSpan.className = 'pagination-ellipsis';
+          ellipsisSpan.setAttribute('aria-hidden', 'true');
+          ellipsisSpan.textContent = '…';
+          paginationNav.appendChild(ellipsisSpan);
+        } else {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'page-btn' + (item === current ? ' active' : '');
+          btn.setAttribute('data-page', item.toString());
+          if (item === current) {
+            btn.setAttribute('aria-current', 'page');
+          }
+          btn.textContent = item.toString();
+          btn.addEventListener('click', () => {
+            this.executeSearch(this.searchQuery, item);
+          });
+          paginationNav.appendChild(btn);
+        }
+      }
+
+      // Next button
+      const nextBtn = document.createElement('button');
+      nextBtn.type = 'button';
+      nextBtn.className = 'next-page-btn';
+      nextBtn.setAttribute('aria-label', 'Next page');
+      nextBtn.textContent = 'Next';
+      nextBtn.disabled = this.searchPage >= this.searchTotalPages;
+      nextBtn.addEventListener('click', () => {
+        if (this.searchPage < this.searchTotalPages) {
+          this.executeSearch(this.searchQuery, this.searchPage + 1);
+        }
+      });
+      paginationNav.appendChild(nextBtn);
 
       this.contentContainer.appendChild(paginationNav);
     }
