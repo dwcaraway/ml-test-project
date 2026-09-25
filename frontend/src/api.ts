@@ -2,6 +2,7 @@ export interface FileSystemItem {
   name: string;
   size: string;
   type: 'folder' | 'file';
+  path?: string;
 }
 
 export interface BrowseResponse {
@@ -110,3 +111,55 @@ export async function uploadFile(
   return (await response.json()) as UploadResponse;
 }
 
+export interface SearchItem {
+  name: string;
+  path: string;
+  size: string;
+  type: 'folder' | 'file';
+}
+
+export interface SearchResponse {
+  basePath: string;
+  query: string;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  items: SearchItem[];
+}
+
+export async function searchFiles(
+  path: string = '',
+  query: string,
+  page: number = 1,
+  pageSize: number = 50,
+  baseUrl: string = ''
+): Promise<SearchResponse> {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) {
+    throw new Error('Search query cannot be empty.');
+  }
+
+  const queryParams = new URLSearchParams({
+    path,
+    query: trimmedQuery,
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+  });
+
+  const response = await fetch(`${baseUrl}/api/search?${queryParams.toString()}`);
+  if (!response.ok) {
+    let errorMessage = `HTTP error! status: ${response.status}`;
+    try {
+      const errorData = await response.json();
+      if (errorData && typeof errorData.error === 'string') {
+        errorMessage = errorData.error;
+      }
+    } catch {
+      // Fallback to HTTP error status
+    }
+    throw new Error(errorMessage);
+  }
+
+  return (await response.json()) as SearchResponse;
+}

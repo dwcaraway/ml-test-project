@@ -13,6 +13,8 @@ namespace TestProject.Services
 
         Task<UploadResultDto> UploadFileAsync(string? targetDirectory, IFormFile file, CancellationToken cancellationToken = default);
 
+        Task<SearchResponseDto> SearchFilesAsync(SearchRequest request, CancellationToken cancellationToken = default);
+
         string ResolveAndValidatePath(string? relativePath, bool mustBeDirectory = false);
     }
 }

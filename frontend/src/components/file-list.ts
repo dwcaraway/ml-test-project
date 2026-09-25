@@ -55,7 +55,7 @@ export class FileListComponent extends BaseComponent {
 
       const tdName = document.createElement('td');
       if (isFolder) {
-        const targetPath = this.currentPath ? `${this.currentPath}/${item.name}` : item.name;
+        const targetPath = item.path ?? (this.currentPath ? `${this.currentPath}/${item.name}` : item.name);
         const link = document.createElement('a');
         link.href = `/files?path=${encodeURIComponent(targetPath)}`;
         link.className = 'folder-link';
@@ -86,7 +86,7 @@ export class FileListComponent extends BaseComponent {
       const tdActions = document.createElement('td');
       tdActions.className = 'action-col';
       if (!isFolder) {
-        const filePath = this.currentPath ? `${this.currentPath}/${item.name}` : item.name;
+        const filePath = item.path ?? (this.currentPath ? `${this.currentPath}/${item.name}` : item.name);
         const downloadLink = document.createElement('a');
         downloadLink.href = `/api/download?path=${encodeURIComponent(filePath)}`;
         downloadLink.className = 'download-link';

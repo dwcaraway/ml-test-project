@@ -10,10 +10,10 @@
 
 **Purpose**: Create shared data models, DTOs, and client API interfaces needed across backend and frontend.
 
-- [ ] T001 [P] Create `SearchRequest.cs` query parameter model (`Path`, `Query`, `Page`, `PageSize`) in `backend/Models/SearchRequest.cs`
-- [ ] T002 [P] Create `SearchResultItemDto.cs` model (`Name`, `Path`, `Size`, `Type`) in `backend/Models/SearchResultItemDto.cs`
-- [ ] T003 [P] Create `SearchResponseDto.cs` payload model (`BasePath`, `Query`, `Page`, `PageSize`, `TotalCount`, `TotalPages`, `Items`) in `backend/Models/SearchResponseDto.cs`
-- [ ] T004 [P] Define `SearchItem` and `SearchResponse` TypeScript interfaces and implement `searchFiles` API client function in `frontend/src/api.ts`
+- [X] T001 [P] Create `SearchRequest.cs` query parameter model (`Path`, `Query`, `Page`, `PageSize`) in `backend/Models/SearchRequest.cs`
+- [X] T002 [P] Create `SearchResultItemDto.cs` model (`Name`, `Path`, `Size`, `Type`) in `backend/Models/SearchResultItemDto.cs`
+- [X] T003 [P] Create `SearchResponseDto.cs` payload model (`BasePath`, `Query`, `Page`, `PageSize`, `TotalCount`, `TotalPages`, `Items`) in `backend/Models/SearchResponseDto.cs`
+- [X] T004 [P] Define `SearchItem` and `SearchResponse` TypeScript interfaces and implement `searchFiles` API client function in `frontend/src/api.ts`
 
 ---
 
@@ -23,7 +23,7 @@
 
 **⚠️ CRITICAL**: Must complete before User Story 1 server implementation.
 
-- [ ] T005 [P] Add `SearchFilesAsync` method signature to `IFileBrowserService` in `backend/Services/IFileBrowserService.cs`
+- [X] T005 [P] Add `SearchFilesAsync` method signature to `IFileBrowserService` in `backend/Services/IFileBrowserService.cs`
 
 **Checkpoint**: Foundational interface ready — user stories can proceed.
 
@@ -39,13 +39,13 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T006 [P] [US1] Write unit tests in `backend/TestProject.Tests/Services/FileBrowserSearchTests.cs` verifying `SearchFilesAsync` recursive subdirectory traversal, case-insensitive partial name matching on item names only, type-based sorting (folders first), pagination slicing, empty query rejection (`VAL-SRCH-003`), and root escape / traversal rejection (`VAL-SRCH-001`)
-- [ ] T007 [P] [US1] Write integration tests in `backend/TestProject.Tests/Integration/SearchEndpointTests.cs` verifying `GET /api/search` status codes (`200 OK`, `400 Bad Request`, `404 Not Found`), query parameter binding, and response schema adherence
+- [X] T006 [P] [US1] Write unit tests in `backend/TestProject.Tests/Services/FileBrowserSearchTests.cs` verifying `SearchFilesAsync` recursive subdirectory traversal, case-insensitive partial name matching on item names only, type-based sorting (folders first), pagination slicing, empty query rejection (`VAL-SRCH-003`), and root escape / traversal rejection (`VAL-SRCH-001`)
+- [X] T007 [P] [US1] Write integration tests in `backend/TestProject.Tests/Integration/SearchEndpointTests.cs` verifying `GET /api/search` status codes (`200 OK`, `400 Bad Request`, `404 Not Found`), query parameter binding, and response schema adherence
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Implement `SearchFilesAsync` in `backend/Services/FileBrowserService.cs` with path traversal validation against `FILE_BROWSER_ROOT`, recursive filesystem enumeration handling inaccessible directories gracefully, partial name matching against item names only, sorting folders first then files alphabetically, and applying pagination slicing
-- [ ] T009 [US1] Implement `Search` endpoint in `backend/Controllers/FileBrowserController.cs` mapping `GET /api/search` to `_fileBrowserService.SearchFilesAsync` with structured exception handling (`SecurityException`/`ArgumentException` to 400, `DirectoryNotFoundException` to 404)
+- [X] T008 [US1] Implement `SearchFilesAsync` in `backend/Services/FileBrowserService.cs` with path traversal validation against `FILE_BROWSER_ROOT`, recursive filesystem enumeration handling inaccessible directories gracefully, partial name matching against item names only, sorting folders first then files alphabetically, and applying pagination slicing
+- [X] T009 [US1] Implement `Search` endpoint in `backend/Controllers/FileBrowserController.cs` mapping `GET /api/search` to `_fileBrowserService.SearchFilesAsync` with structured exception handling (`SecurityException`/`ArgumentException` to 400, `DirectoryNotFoundException` to 404)
 
 **Checkpoint**: User Story 1 fully functional and independently testable as the core recursive search MVP.
 
@@ -61,12 +61,12 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US2] Write unit tests in `frontend/tests/api.test.ts` verifying `searchFiles` query parameter encoding, non-empty query validation, and error response handling
-- [ ] T011 [P] [US2] Write component and view tests in `frontend/tests/views/file-explorer-search.test.ts` verifying search box placement to the left of the upload link in browse mode, transition to search mode, upload button removal during search, search results table rendering with name and size, and folder click navigation switching to browse mode
+- [X] T010 [P] [US2] Write unit tests in `frontend/tests/api.test.ts` verifying `searchFiles` query parameter encoding, non-empty query validation, and error response handling
+- [X] T011 [P] [US2] Write component and view tests in `frontend/tests/views/file-explorer-search.test.ts` verifying search box placement to the left of the upload link in browse mode, transition to search mode, upload button removal during search, search results table rendering with name and size, and folder click navigation switching to browse mode
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Update `FileExplorerView` in `frontend/src/views/file-explorer-view.ts` to add the search input form to `.header-actions` (positioned to the left of `#upload-file-button`), manage `mode: 'browsing' | 'searching'`, hide the upload button when in search mode, render the search box above the search results table, render search results with type icons and sizes, and implement folder row click handler that switches to browse mode for the selected directory
+- [X] T012 [US2] Update `FileExplorerView` in `frontend/src/views/file-explorer-view.ts` to add the search input form to `.header-actions` (positioned to the left of `#upload-file-button`), manage `mode: 'browsing' | 'searching'`, hide the upload button when in search mode, render the search box above the search results table, render search results with type icons and sizes, and implement folder row click handler that switches to browse mode for the selected directory
 
 **Checkpoint**: User Stories 1 and 2 work together. Users can search from the UI, view results without an upload button, and click any folder to browse its contents.
 
@@ -82,11 +82,11 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T013 [P] [US3] Add view tests in `frontend/tests/views/file-explorer-search.test.ts` verifying rendering of pagination controls (`1 .. N`) at the bottom of search results, active page highlighting (`.active` / `aria-current="page"`), and click event dispatching search for the selected page
+- [X] T013 [P] [US3] Add view tests in `frontend/tests/views/file-explorer-search.test.ts` verifying rendering of pagination controls (`1 .. N`) at the bottom of search results, active page highlighting (`.active` / `aria-current="page"`), and click event dispatching search for the selected page
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Implement pagination bar rendering (`#search-pagination` with `1 .. N` buttons) and page change event handlers in `FileExplorerView` in `frontend/src/views/file-explorer-view.ts`, updating the active page selection and rendering the newly fetched results
+- [X] T014 [US3] Implement pagination bar rendering (`#search-pagination` with `1 .. N` buttons) and page change event handlers in `FileExplorerView` in `frontend/src/views/file-explorer-view.ts`, updating the active page selection and rendering the newly fetched results
 
 **Checkpoint**: User Story 3 complete. Users can navigate through large search result sets page by page.
 
@@ -102,11 +102,11 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T015 [P] [US4] Write integration tests in `frontend/tests/views/file-explorer-spinner.test.ts` verifying `#explorer-spinner` is rendered, becomes visible during active search, delete, and upload requests, and is hidden once the request completes or fails
+- [X] T015 [P] [US4] Write integration tests in `frontend/tests/views/file-explorer-spinner.test.ts` verifying `#explorer-spinner` is rendered, becomes visible during active search, delete, and upload requests, and is hidden once the request completes or fails
 
 ### Implementation for User Story 4
 
-- [ ] T016 [US4] Add `#explorer-spinner` DOM element and CSS `@keyframes spin` styling in `frontend/src/views/file-explorer-view.ts`, implement centralized `setOperationLoading` state management, and wrap `handleSearch`, `handleDelete`, and `handleFileSelected` with `try ... finally` to ensure the spinner is displayed while requests are in flight and hidden immediately upon response or error
+- [X] T016 [US4] Add `#explorer-spinner` DOM element and CSS `@keyframes spin` styling in `frontend/src/views/file-explorer-view.ts`, implement centralized `setOperationLoading` state management, and wrap `handleSearch`, `handleDelete`, and `handleFileSelected` with `try ... finally` to ensure the spinner is displayed while requests are in flight and hidden immediately upon response or error
 
 **Checkpoint**: All user stories fully implemented. Users receive continuous visual feedback during all asynchronous operations.
 
@@ -116,11 +116,11 @@
 
 **Purpose**: Automated validation across all test suites, linting, formatting, and documentation synchronization.
 
-- [ ] T017 [P] Run full frontend test suite via `npm test` in `frontend/` to ensure zero regressions across all views and components
-- [ ] T018 [P] Verify TypeScript static type checking passes cleanly via `npm run typecheck` in `frontend/`
-- [ ] T019 [P] Run full backend test suite via `dotnet test` in `backend/` to ensure zero regressions across unit and integration tests
-- [ ] T020 [P] Verify .NET code formatting and linting via `dotnet format TestProject.sln --verify-no-changes` in `backend/`
-- [ ] T021 Update `README.md` to document the recursive search API endpoint (`GET /api/search`), query parameters, pagination controls (`1 .. N`), UI search box placement, upload button visibility rules, and the global operation loading spinner per Constitution Principle VIII
+- [X] T017 [P] Run full frontend test suite via `npm test` in `frontend/` to ensure zero regressions across all views and components
+- [X] T018 [P] Verify TypeScript static type checking passes cleanly via `npm run typecheck` in `frontend/`
+- [X] T019 [P] Run full backend test suite via `dotnet test` in `backend/` to ensure zero regressions across unit and integration tests
+- [X] T020 [P] Verify .NET code formatting and linting via `dotnet format TestProject.sln --verify-no-changes` in `backend/`
+- [X] T021 Update `README.md` to document the recursive search API endpoint (`GET /api/search`), query parameters, pagination controls (`1 .. N`), UI search box placement, upload button visibility rules, and the global operation loading spinner per Constitution Principle VIII
 
 ---
 

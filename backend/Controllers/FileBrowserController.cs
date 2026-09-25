@@ -45,6 +45,30 @@ namespace TestProject.Controllers
             }
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] SearchRequest request, CancellationToken cancellationToken)
+        {
+            _logger.LogDebug("Search called with query: {@Request}", request);
+
+            try
+            {
+                var response = await _fileBrowserService.SearchFilesAsync(request, cancellationToken);
+                return Ok(response);
+            }
+            catch (SecurityException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return NotFound(new { error = "Directory not found." });
+            }
+        }
+
         [HttpGet("download")]
         public IActionResult Download([FromQuery] string? path)
         {

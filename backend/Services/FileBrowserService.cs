@@ -299,5 +299,119 @@ namespace TestProject.Services
                 Message = "File uploaded successfully."
             };
         }
+
+        public Task<SearchResponseDto> SearchFilesAsync(SearchRequest request, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(request.Query))
+            {
+                throw new ArgumentException("Search query cannot be empty.");
+            }
+
+            var canonicalTargetDir = ResolveAndValidatePath(request.Path, mustBeDirectory: true);
+            var canonicalRoot = _options.GetCanonicalRootPath()
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            string relativeBasePath;
+            if (canonicalTargetDir.Equals(canonicalRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                relativeBasePath = string.Empty;
+            }
+            else
+            {
+                relativeBasePath = canonicalTargetDir.Substring(canonicalRoot.Length)
+                    .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                relativeBasePath = NormalizeSeparators(relativeBasePath);
+            }
+
+            var matchingFolders = new List<SearchResultItemDto>();
+            var matchingFiles = new List<SearchResultItemDto>();
+
+            var dirQueue = new Queue<string>();
+            dirQueue.Enqueue(canonicalTargetDir);
+
+            while (dirQueue.Count > 0)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                var currentDir = dirQueue.Dequeue();
+
+                string[] subDirs;
+                try
+                {
+                    subDirs = Directory.GetDirectories(currentDir);
+                }
+                catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+                {
+                    continue;
+                }
+
+                foreach (var subDir in subDirs)
+                {
+                    var dirName = Path.GetFileName(subDir);
+                    if (dirName.Contains(request.Query, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var relPath = subDir.Substring(canonicalRoot.Length)
+                            .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                        matchingFolders.Add(SearchResultItemDto.Folder(dirName, NormalizeSeparators(relPath)));
+                    }
+
+                    dirQueue.Enqueue(subDir);
+                }
+
+                string[] files;
+                try
+                {
+                    files = Directory.GetFiles(currentDir);
+                }
+                catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+                {
+                    continue;
+                }
+
+                foreach (var file in files)
+                {
+                    var fileName = Path.GetFileName(file);
+                    if (fileName.Contains(request.Query, StringComparison.OrdinalIgnoreCase))
+                    {
+                        long length = 0;
+                        try
+                        {
+                            length = new FileInfo(file).Length;
+                        }
+                        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+                        {
+                            length = 0;
+                        }
+
+                        var relPath = file.Substring(canonicalRoot.Length)
+                            .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                        matchingFiles.Add(SearchResultItemDto.File(fileName, NormalizeSeparators(relPath), length));
+                    }
+                }
+            }
+
+            // Sort by type: folders first, then files (alphabetical within type)
+            var sortedFolders = matchingFolders.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToList();
+            var sortedFiles = matchingFiles.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToList();
+            var allItems = sortedFolders.Concat(sortedFiles).ToList();
+
+            var totalCount = allItems.Count;
+            var totalPages = totalCount == 0 ? 1 : (int)Math.Ceiling((double)totalCount / request.PageSize);
+            var pageItems = allItems.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList();
+
+            return Task.FromResult(new SearchResponseDto
+            {
+                BasePath = relativeBasePath,
+                Query = request.Query,
+                Page = request.Page,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                Items = pageItems
+            });
+        }
     }
 }
