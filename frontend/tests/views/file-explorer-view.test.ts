@@ -175,4 +175,106 @@ describe('FileExplorerView Integration', () => {
 
     router?.stop();
   });
+
+  describe('User Story 1 - Folder and File Counts Summary', () => {
+    it('displays accurate folder and file counts in footer for mixed items', async () => {
+      vi.spyOn(api, 'fetchBrowseDirectory').mockResolvedValue({
+        currentPath: '',
+        page: 1,
+        pageSize: 50,
+        totalCount: 5,
+        totalPages: 1,
+        items: [
+          { name: 'docs', size: '-', type: 'folder' },
+          { name: 'images', size: '-', type: 'folder' },
+          { name: 'readme.txt', size: '100', type: 'file' },
+          { name: 'logo.png', size: '200', type: 'file' },
+          { name: 'notes.md', size: '300', type: 'file' },
+        ],
+      });
+
+      view.mount(container, { path: '' });
+
+      await vi.waitFor(() => {
+        const footer = container.querySelector('.file-counts-footer');
+        expect(footer).not.toBeNull();
+      });
+
+      const footer = container.querySelector('.file-counts-footer');
+      expect(footer?.textContent).toContain('Folders: 2');
+      expect(footer?.textContent).toContain('Files: 3');
+    });
+
+    it('displays 0 folders and 0 files in footer for an empty directory', async () => {
+      vi.spyOn(api, 'fetchBrowseDirectory').mockResolvedValue({
+        currentPath: 'empty-dir',
+        page: 1,
+        pageSize: 50,
+        totalCount: 0,
+        totalPages: 0,
+        items: [],
+      });
+
+      view.mount(container, { path: 'empty-dir' });
+
+      await vi.waitFor(() => {
+        const footer = container.querySelector('.file-counts-footer');
+        expect(footer).not.toBeNull();
+      });
+
+      const footer = container.querySelector('.file-counts-footer');
+      expect(footer?.textContent).toContain('Folders: 0');
+      expect(footer?.textContent).toContain('Files: 0');
+    });
+
+    it('displays accurate counts when directory contains only folders', async () => {
+      vi.spyOn(api, 'fetchBrowseDirectory').mockResolvedValue({
+        currentPath: 'folders-only',
+        page: 1,
+        pageSize: 50,
+        totalCount: 2,
+        totalPages: 1,
+        items: [
+          { name: 'dir1', size: '-', type: 'folder' },
+          { name: 'dir2', size: '-', type: 'folder' },
+        ],
+      });
+
+      view.mount(container, { path: 'folders-only' });
+
+      await vi.waitFor(() => {
+        const footer = container.querySelector('.file-counts-footer');
+        expect(footer).not.toBeNull();
+      });
+
+      const footer = container.querySelector('.file-counts-footer');
+      expect(footer?.textContent).toContain('Folders: 2');
+      expect(footer?.textContent).toContain('Files: 0');
+    });
+
+    it('displays accurate counts when directory contains only files', async () => {
+      vi.spyOn(api, 'fetchBrowseDirectory').mockResolvedValue({
+        currentPath: 'files-only',
+        page: 1,
+        pageSize: 50,
+        totalCount: 2,
+        totalPages: 1,
+        items: [
+          { name: 'file1.txt', size: '50', type: 'file' },
+          { name: 'file2.txt', size: '60', type: 'file' },
+        ],
+      });
+
+      view.mount(container, { path: 'files-only' });
+
+      await vi.waitFor(() => {
+        const footer = container.querySelector('.file-counts-footer');
+        expect(footer).not.toBeNull();
+      });
+
+      const footer = container.querySelector('.file-counts-footer');
+      expect(footer?.textContent).toContain('Folders: 0');
+      expect(footer?.textContent).toContain('Files: 2');
+    });
+  });
 });

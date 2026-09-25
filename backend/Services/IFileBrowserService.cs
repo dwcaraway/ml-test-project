@@ -8,6 +8,8 @@ namespace TestProject.Services
 
         FileDownloadInfo GetFileForDownload(string? relativePath);
 
+        void DeleteItem(string? relativePath);
+
         string ResolveAndValidatePath(string? relativePath, bool mustBeDirectory = false);
     }
 }

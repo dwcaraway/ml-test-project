@@ -43,6 +43,17 @@ This repository contains a full-stack application split into frontend and backen
 - Build backend: `cd backend && dotnet build`
 - Run backend: `cd backend && dotnet run`
 - Run backend tests: `cd backend && dotnet test`
+- Run backend lint: - `cd backend && dotnet format TestProject.sln --verify-no-changes`
+
+## Autonomy rules:
+- Do not ask for permission before running build/test/lint.
+- Do not ask for permission when performing read-only operations within the workspace file path.
+- Do not ask for permission when performing read-only git operations.
+- Run the smallest relevant verification command.
+- Keep changes scoped to the task.
+- Do not touch unrelated files.
+- If blocked by missing data, secrets, or a decision, explain the blocker clearly and stop.
+- For destructive actions like reset, delete, or force-push, ask before proceeding.
 
 ## Testing Expectations
 - Frontend changes require relevant Vitest coverage or a focused validation run.

@@ -40,8 +40,10 @@ ml-test-project/
 ├── specs/                          # Spec Kit feature specifications, plans, and tasks
 │   ├── 001-spa-views-routing/      # SPA Views & Deep-Linking Routing specification
 │   ├── 002-file-browser-api/       # File & Directory Browsing and Download Web API specification
-│   └── 003-file-explorer-view/     # Frontend File Explorer View & Breadcrumb Navigation specification
+│   ├── 003-file-explorer-view/     # Frontend File Explorer View & Breadcrumb Navigation specification
+│   └── 004-item-deletion-and-counts/ # File Explorer Item Counts and Secure Deletion specification
 ├── storage/                        # Server-side home root directory for file browsing & download (sample data)
+├── seed-storage.ps1                # Generates a local storage tree for API testing
 ├── .github/workflows/              # CI/CD automation workflows
 ├── .specify/                       # Spec Kit project metadata & constitution
 ├── AGENTS.md                       # Repo guidance and conventions
@@ -61,6 +63,28 @@ Verify your installation:
 dotnet --version
 node --version
 ```
+
+---
+
+## Local Storage Seed Data for Testing
+
+The project includes a root-level PowerShell helper, `seed-storage.ps1`, that creates a realistic local storage tree under the repository's `storage/` folder for browser and download testing.
+
+Run it from the project root:
+
+```powershell
+./seed-storage.ps1
+```
+
+This script will:
+
+* remove and recreate the `storage/` directory so the tree is deterministic
+* create between 25 and 100 files at the root level
+* create between 5 and 10 folders at the root level
+* recurse through child folders and generate additional files/folders up to 5 levels deep
+* create a mix of nested directories and sample text files for the file browser API to browse
+
+This is useful when you want to exercise paging, nested directory traversal, sorting, and download behavior without manually creating test data.
 
 ---
 
@@ -175,6 +199,27 @@ Streams a file from the server using `PhysicalFileResult` without buffering into
   * `400 Bad Request`: Missing/empty path, path traversal attempt, or path targets a directory instead of a file.
   * `404 Not Found`: File does not exist.
 
+##### 3. Delete File or Directory (`DELETE /api/delete`)
+
+Permanently deletes a file or directory located within the configured storage root directory.
+
+* **Query Parameters:**
+  * `path` (*required*): Relative path to the file or directory to delete.
+
+* **Response (`200 OK`):**
+  ```json
+  {
+    "message": "Item deleted successfully."
+  }
+  ```
+
+* **Error Responses:**
+  * `400 Bad Request`: Missing/empty path, path traversal attempt (`../`, `..\\`), or attempt to delete the storage root directory.
+  * `404 Not Found`: File or directory does not exist.
+
+> [!NOTE]
+> Deleting a folder recursively deletes all nested files and subdirectories within that folder. Attempts to delete the root storage directory itself are strictly prohibited.
+
 #### Security & Path Traversal Prevention
 
 All incoming paths are canonicalized and strictly verified against the storage root directory. Any attempt to navigate outside the home directory via `../`, `..\\`, absolute paths, or prefix collision attempts is blocked with `400 Bad Request`.
@@ -234,6 +279,8 @@ The frontend includes a responsive, zero-framework File Explorer view accessible
 * **Directory Browsing**: Dynamically queries the backend API (`GET /api/browse?path=...`) and displays files and folders in a semantic table.
 * **Schema-Compliant Size Formatting**: Folders strictly render `"-"` in the size column, while files display their byte size.
 * **Direct File Streaming Downloads**: Files feature a direct download link targeting `GET /api/download?path={filePath}`, utilizing native browser download capabilities without memory buffering. Folders omit download links.
+* **Item Counts Summary Footer**: Prominently displays the total count of folders and non-folder files on the current directory results at the bottom of the table (`Folders: X | Files: Y`), automatically recalculating when items are removed.
+* **Safe Item Deletion with Confirmation**: Both files and folders provide an accessible **Delete** action in the Actions column. Clicking Delete presents a browser confirmation prompt (`window.confirm`) identifying the item name and explicitly warning that the action is permanent and unrecoverable. Upon confirmation, the deletion request is dispatched to `DELETE /api/delete`, removing the item from the view and decrementing counters immediately without requiring a full page refresh.
 * **Dynamic Breadcrumb Navigation**:
   * Hidden when viewing the root storage directory.
   * When viewing subdirectories, displays a hierarchical path starting with `Home` (`Home > docs`).

@@ -65,5 +65,29 @@ namespace TestProject.Controllers
                 return NotFound(new { error = "File not found." });
             }
         }
+
+        [HttpDelete("delete")]
+        public IActionResult Delete([FromQuery] string? path)
+        {
+            _logger.LogDebug("Deletecalled with query: {@path}", path);
+
+            try
+            {
+                _fileBrowserService.DeleteItem(path);
+                return Ok(new { message = "Item deleted successfully." });
+            }
+            catch (SecurityException)
+            {
+                return BadRequest(new { error = "Invalid path or path traversal detected." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (FileNotFoundException)
+            {
+                return NotFound(new { error = "Item not found." });
+            }
+        }
     }
 }
