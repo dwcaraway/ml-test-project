@@ -194,5 +194,36 @@ namespace TestProject.Services
                 FileSizeBytes = fileInfo.Length
             };
         }
+
+        public void DeleteItem(string? relativePath)
+        {
+            if (string.IsNullOrWhiteSpace(relativePath))
+            {
+                throw new ArgumentException("Path parameter is required.");
+            }
+
+            var canonicalPath = ResolveAndValidatePath(relativePath, mustBeDirectory: false);
+            var rootWithoutTrailing = _options.GetCanonicalRootPath()
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            if (canonicalPath.Equals(rootWithoutTrailing, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Cannot delete the storage root directory.");
+            }
+
+            if (File.Exists(canonicalPath))
+            {
+                File.Delete(canonicalPath);
+                return;
+            }
+
+            if (Directory.Exists(canonicalPath))
+            {
+                Directory.Delete(canonicalPath, recursive: true);
+                return;
+            }
+
+            throw new FileNotFoundException("Item not found.");
+        }
     }
 }

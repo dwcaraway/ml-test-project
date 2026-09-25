@@ -165,5 +165,64 @@ namespace TestProject.Tests.Services
             Assert.NotEqual("-", sampleFile.Size);
             Assert.Equal("file", sampleFile.Type);
         }
+
+        [Fact]
+        public void DeleteItem_ValidFile_DeletesFileSuccessfully()
+        {
+            var filePath = Path.Combine(_testRoot, "to-delete.txt");
+            File.WriteAllText(filePath, "delete me");
+            Assert.True(File.Exists(filePath));
+
+            _service.DeleteItem("to-delete.txt");
+
+            Assert.False(File.Exists(filePath));
+        }
+
+        [Fact]
+        public void DeleteItem_ValidDirectoryWithContents_DeletesDirectoryRecursively()
+        {
+            var dirPath = Path.Combine(_testRoot, "to-delete-dir");
+            Directory.CreateDirectory(dirPath);
+            File.WriteAllText(Path.Combine(dirPath, "nested.txt"), "nested content");
+            Directory.CreateDirectory(Path.Combine(dirPath, "sub-dir"));
+            File.WriteAllText(Path.Combine(dirPath, "sub-dir", "deep.txt"), "deep content");
+            Assert.True(Directory.Exists(dirPath));
+
+            _service.DeleteItem("to-delete-dir");
+
+            Assert.False(Directory.Exists(dirPath));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void DeleteItem_EmptyOrWhitespacePath_ThrowsArgumentException(string? emptyPath)
+        {
+            Assert.Throws<ArgumentException>(() => _service.DeleteItem(emptyPath));
+        }
+
+        [Fact]
+        public void DeleteItem_RootDirectoryPath_ThrowsArgumentException()
+        {
+            var ex = Assert.Throws<ArgumentException>(() => _service.DeleteItem("/"));
+            Assert.Contains("root", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Theory]
+        [InlineData("../")]
+        [InlineData("..\\")]
+        [InlineData("../../etc/passwd")]
+        [InlineData("docs/../../../escaped")]
+        public void DeleteItem_PathTraversal_ThrowsSecurityException(string maliciousPath)
+        {
+            Assert.Throws<SecurityException>(() => _service.DeleteItem(maliciousPath));
+        }
+
+        [Fact]
+        public void DeleteItem_NonExistentItem_ThrowsFileNotFoundException()
+        {
+            Assert.Throws<FileNotFoundException>(() => _service.DeleteItem("non-existent.txt"));
+        }
     }
 }

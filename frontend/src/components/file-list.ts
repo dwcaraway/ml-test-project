@@ -5,16 +5,19 @@ export class FileListComponent extends BaseComponent {
   private items: FileSystemItem[];
   private currentPath: string;
   private onFolderClick: (folderPath: string) => void;
+  private onDeleteClick?: (item: FileSystemItem) => void;
 
   constructor(
     items: FileSystemItem[],
     currentPath: string,
-    onFolderClick: (folderPath: string) => void
+    onFolderClick: (folderPath: string) => void,
+    onDeleteClick?: (item: FileSystemItem) => void
   ) {
     super();
     this.items = items;
     this.currentPath = currentPath;
     this.onFolderClick = onFolderClick;
+    this.onDeleteClick = onDeleteClick;
   }
 
   render(): HTMLElement {
@@ -91,6 +94,17 @@ export class FileListComponent extends BaseComponent {
         downloadLink.textContent = 'Download';
         tdActions.appendChild(downloadLink);
       }
+
+      const deleteLink = document.createElement('a');
+      deleteLink.href = '#';
+      deleteLink.className = 'delete-link';
+      deleteLink.textContent = 'Delete';
+      deleteLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.onDeleteClick?.(item);
+      });
+      tdActions.appendChild(deleteLink);
+
       tr.appendChild(tdActions);
 
       tbody.appendChild(tr);

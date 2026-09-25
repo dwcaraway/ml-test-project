@@ -10,8 +10,8 @@
 
 **Purpose**: API client contracts, data models, and shared client infrastructure.
 
-- [ ] T001 [P] Define `DeleteResponse` interface and implement `deleteItem` API client function in `frontend/src/api.ts`
-- [ ] T002 [P] Add unit tests in `frontend/tests/api.test.ts` verifying `deleteItem` request formatting and error message extraction
+- [X] T001 [P] Define `DeleteResponse` interface and implement `deleteItem` API client function in `frontend/src/api.ts`
+- [X] T002 [P] Add unit tests in `frontend/tests/api.test.ts` verifying `deleteItem` request formatting and error message extraction
 
 ---
 
@@ -21,7 +21,7 @@
 
 **⚠️ CRITICAL**: Must complete before User Story 3 server implementation.
 
-- [ ] T003 [P] Add `DeleteItem` method signature to `IFileBrowserService` in `backend/Services/IFileBrowserService.cs`
+- [X] T003 [P] Add `DeleteItem` method signature to `IFileBrowserService` in `backend/Services/IFileBrowserService.cs`
 
 **Checkpoint**: Foundational interface ready — user stories can proceed.
 
@@ -37,11 +37,11 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T004 [P] [US1] Write unit tests in `frontend/tests/views/file-explorer-view.test.ts` verifying folder count and file count calculation and footer display across mixed, folder-only, file-only, and empty directory states
+- [X] T004 [P] [US1] Write unit tests in `frontend/tests/views/file-explorer-view.test.ts` verifying folder count and file count calculation and footer display across mixed, folder-only, file-only, and empty directory states
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Implement item counter calculation and render `.file-counts-footer` element at the bottom of the view in `frontend/src/views/file-explorer-view.ts`
+- [X] T005 [US1] Implement item counter calculation and render `.file-counts-footer` element at the bottom of the view in `frontend/src/views/file-explorer-view.ts`
 
 **Checkpoint**: User Story 1 fully functional and independently testable as the core counts MVP.
 
@@ -57,13 +57,13 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T006 [P] [US2] Write unit tests in `frontend/tests/components/file-list.test.ts` verifying presence of `.delete-link` in the Actions column for both folder rows and file rows, and triggering `onDeleteClick` callback
-- [ ] T007 [P] [US2] Write integration tests in `frontend/tests/views/file-explorer-delete.test.ts` verifying confirmation prompt (`window.confirm`), prompt cancellation, successful deletion item removal, counter decrement, and failure error banner
+- [X] T006 [P] [US2] Write unit tests in `frontend/tests/components/file-list.test.ts` verifying presence of `.delete-link` in the Actions column for both folder rows and file rows, and triggering `onDeleteClick` callback
+- [X] T007 [P] [US2] Write integration tests in `frontend/tests/views/file-explorer-delete.test.ts` verifying confirmation prompt (`window.confirm`), prompt cancellation, successful deletion item removal, counter decrement, and failure error banner
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] Update `FileListComponent` in `frontend/src/components/file-list.ts` to add `.delete-link` to the Actions column for both folders and files and wire `onDeleteClick` callback
-- [ ] T009 [US2] Implement deletion confirmation prompt (`window.confirm`), `deleteItem` invocation, item removal from `items`, dynamic count recomputation, and error handling in `frontend/src/views/file-explorer-view.ts`
+- [X] T008 [US2] Update `FileListComponent` in `frontend/src/components/file-list.ts` to add `.delete-link` to the Actions column for both folders and files and wire `onDeleteClick` callback
+- [X] T009 [US2] Implement deletion confirmation prompt (`window.confirm`), `deleteItem` invocation, item removal from `items`, dynamic count recomputation, and error handling in `frontend/src/views/file-explorer-view.ts`
 
 **Checkpoint**: User Stories 1 and 2 work independently and together. Users can view counts and safely delete items with confirmation.
 
@@ -79,13 +79,13 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US3] Write unit tests in `backend/TestProject.Tests/Services/FileBrowserServiceTests.cs` verifying `DeleteItem` path traversal validation, root directory protection, file deletion, and recursive directory deletion
-- [ ] T011 [P] [US3] Write integration tests in `backend/TestProject.Tests/Integration/DeleteEndpointTests.cs` verifying `DELETE /api/delete` endpoint status codes (`200 OK`, `400 Bad Request`, `404 Not Found`)
+- [X] T010 [P] [US3] Write unit tests in `backend/TestProject.Tests/Services/FileBrowserServiceTests.cs` verifying `DeleteItem` path traversal validation, root directory protection, file deletion, and recursive directory deletion
+- [X] T011 [P] [US3] Write integration tests in `backend/TestProject.Tests/Integration/DeleteEndpointTests.cs` verifying `DELETE /api/delete` endpoint status codes (`200 OK`, `400 Bad Request`, `404 Not Found`)
 
 ### Implementation for User Story 3
 
-- [ ] T012 [US3] Implement `DeleteItem` in `backend/Services/FileBrowserService.cs` with path canonicalization, root directory check, file deletion, and recursive directory deletion (`Directory.Delete(fullPath, recursive: true)`)
-- [ ] T013 [US3] Implement `Delete` endpoint in `backend/Controllers/FileBrowserController.cs` mapping `DELETE /api/delete` to `_fileBrowserService.DeleteItem` with exception mapping (`SecurityException` / `ArgumentException` to 400, `FileNotFoundException` to 404)
+- [X] T012 [US3] Implement `DeleteItem` in `backend/Services/FileBrowserService.cs` with path canonicalization, root directory check, file deletion, and recursive directory deletion (`Directory.Delete(fullPath, recursive: true)`)
+- [X] T013 [US3] Implement `Delete` endpoint in `backend/Controllers/FileBrowserController.cs` mapping `DELETE /api/delete` to `_fileBrowserService.DeleteItem` with exception mapping (`SecurityException` / `ArgumentException` to 400, `FileNotFoundException` to 404)
 
 **Checkpoint**: All user stories fully implemented. Backend secure deletion endpoint and frontend safe deletion workflow fully functional.
 
@@ -95,12 +95,12 @@
 
 **Purpose**: Verification, linting, formatting, documentation, and end-to-end quickstart execution.
 
-- [ ] T014 [P] Run full frontend test suite via `npm test` in `frontend/` to ensure zero regressions across all component and view tests
-- [ ] T015 [P] Verify TypeScript static type checking passes cleanly via `npm run typecheck` in `frontend/`
-- [ ] T016 [P] Run full backend test suite via `dotnet test` in `backend/` to ensure zero regressions
-- [ ] T017 [P] Run production build via `npm run build` in `frontend/` and restore `backend/wwwroot/.gitkeep`
-- [ ] T018 Execute full validation workflow following `specs/004-item-deletion-and-counts/quickstart.md`
-- [ ] T019 [P] Update project documentation in `README.md` to document the `DELETE /api/delete` endpoint, item counts footer, and deletion confirmation workflow per Constitution Principle VIII
+- [X] T014 [P] Run full frontend test suite via `npm test` in `frontend/` to ensure zero regressions across all component and view tests
+- [X] T015 [P] Verify TypeScript static type checking passes cleanly via `npm run typecheck` in `frontend/`
+- [X] T016 [P] Run full backend test suite via `dotnet test` in `backend/` to ensure zero regressions
+- [X] T017 [P] Run production build via `npm run build` in `frontend/` and restore `backend/wwwroot/.gitkeep`
+- [X] T018 Execute full validation workflow following `specs/004-item-deletion-and-counts/quickstart.md`
+- [X] T019 [P] Update project documentation in `README.md` to document the `DELETE /api/delete` endpoint, item counts footer, and deletion confirmation workflow per Constitution Principle VIII
 
 ---
 

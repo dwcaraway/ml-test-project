@@ -107,3 +107,59 @@ describe('fetchBrowseDirectory', () => {
   });
 });
 
+describe('deleteItem', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('sends DELETE request with encoded path and returns message on success', async () => {
+    const mockResponse = { message: 'Item deleted successfully.' };
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    });
+
+    const { deleteItem } = await import('../src/api');
+    const result = await deleteItem('docs/file 1.txt');
+
+    expect(result).toEqual(mockResponse);
+    expect(global.fetch).toHaveBeenCalledWith('/api/delete?path=docs%2Ffile%201.txt', {
+      method: 'DELETE',
+    });
+  });
+
+  it('throws error with server message when response is not ok', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({ error: 'Invalid path or path traversal detected.' }),
+    });
+
+    const { deleteItem } = await import('../src/api');
+    await expect(deleteItem('../outside.txt')).rejects.toThrow(
+      'Invalid path or path traversal detected.'
+    );
+  });
+
+  it('throws HTTP status error fallback when error response is not json', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => {
+        throw new Error('Not JSON');
+      },
+    });
+
+    const { deleteItem } = await import('../src/api');
+    await expect(deleteItem('error-file.txt')).rejects.toThrow(
+      'HTTP error! status: 500'
+    );
+  });
+});
+

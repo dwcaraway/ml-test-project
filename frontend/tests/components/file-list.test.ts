@@ -70,4 +70,32 @@ describe('FileListComponent', () => {
 
     expect(onFolderClick).toHaveBeenCalledWith('parent/subfolder');
   });
+
+  it('renders delete link for both folders and files in action column', () => {
+    const items: FileSystemItem[] = [
+      { name: 'subfolder', size: '-', type: 'folder' },
+      { name: 'file.txt', size: '100', type: 'file' },
+    ];
+    const onDeleteClick = vi.fn();
+
+    const component = new FileListComponent(items, 'docs', vi.fn(), onDeleteClick);
+    const el = component.render();
+
+    const folderRow = el.querySelector('tr.folder-row');
+    const folderDeleteLink = folderRow?.querySelector('.action-col .delete-link') as HTMLElement;
+    expect(folderDeleteLink).not.toBeNull();
+    expect(folderDeleteLink.textContent).toBe('Delete');
+
+    const fileRow = el.querySelector('tr.file-row');
+    const fileDeleteLink = fileRow?.querySelector('.action-col .delete-link') as HTMLElement;
+    expect(fileDeleteLink).not.toBeNull();
+    expect(fileDeleteLink.textContent).toBe('Delete');
+
+    // Clicking delete link triggers onDeleteClick with corresponding item
+    folderDeleteLink.click();
+    expect(onDeleteClick).toHaveBeenCalledWith(items[0]);
+
+    fileDeleteLink.click();
+    expect(onDeleteClick).toHaveBeenCalledWith(items[1]);
+  });
 });

@@ -43,6 +43,7 @@ This repository contains a full-stack application split into frontend and backen
 - Build backend: `cd backend && dotnet build`
 - Run backend: `cd backend && dotnet run`
 - Run backend tests: `cd backend && dotnet test`
+- Run backend lint: - `cd backend && dotnet format TestProject.sln --verify-no-changes`
 
 ## Autonomy rules:
 - Do not ask for permission before running build/test/lint.

@@ -36,7 +36,8 @@ describe('FileListComponent Download Links (User Story 3)', () => {
     expect(downloadLink).toBeNull();
 
     const actionCol = folderRow?.querySelector('td.action-col');
-    expect(actionCol?.textContent?.trim()).toBe('');
+    expect(actionCol?.querySelector('a.download-link')).toBeNull();
+    expect(actionCol?.textContent).not.toContain('Download');
   });
 
   it('correctly encodes special characters in file download path', () => {
